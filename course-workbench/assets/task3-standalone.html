@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Task 3 报告转述 · 学情诊断（单文件版）</title>
+  <style>
+/* =========================================================
+   学情诊断系统 — 统一视觉规范（单文件内联）
+   ========================================================= */
+:root {
+  --c-blue:    #4A90E2;
+  --c-green:   #2BB673;
+  --c-orange:  #F5852A;
+  --c-purple:  #9B6DD6;
+  --c-teal:    #18B7A8;
+  --c-gold:    #F2B705;
+  --ink:       #1f2430;
+  --ink-soft:  #5b6472;
+  --ink-faint: #98a0ad;
+  --line:      #eef1f6;
+  --bg:        #f4f6fa;
+  --card:      #ffffff;
+  --shadow:    0 12px 34px rgba(28, 38, 64, 0.14);
+  --shadow-sm: 0 4px 14px rgba(28, 38, 64, 0.10);
+  --radius:    20px;
+  --radius-sm: 14px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, -apple-system, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 一、学情数据中心 */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(20, 28, 46, 0.46);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 28px; z-index: 10;
+}
+.dialog {
+  width: 100%; max-width: 920px; max-height: 92vh;
+  background: var(--card); border-radius: var(--radius);
+  box-shadow: var(--shadow); display: flex; flex-direction: column; overflow: hidden;
+}
+.dialog__head { display: flex; align-items: center; gap: 12px; padding: 22px 26px 6px; }
+.dialog__badge {
+  width: 44px; height: 44px; border-radius: 13px;
+  background: linear-gradient(135deg, #5b8def, #4a90e2);
+  display: grid; place-items: center; font-size: 22px;
+  box-shadow: 0 6px 16px rgba(74, 144, 226, 0.35);
+}
+.dialog__title { flex: 1; }
+.dialog__title h1 { font-size: 22px; font-weight: 800; letter-spacing: .3px; }
+.dialog__title p { font-size: 13px; color: var(--ink-faint); margin-top: 2px; }
+.dialog__close {
+  width: 38px; height: 38px; border-radius: 50%; border: none;
+  background: #f1f3f7; color: var(--ink-soft); font-size: 20px; cursor: pointer; transition: .2s;
+}
+.dialog__close:hover { background: #e6e9f0; color: var(--ink); }
+.dialog__sub { padding: 6px 26px 4px; font-size: 14px; color: var(--ink-soft); }
+.dialog__sub b { color: var(--ink); }
+.dialog__body { padding: 18px 26px 28px; overflow-y: auto; }
+.task-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+@media (max-width: 720px) { .task-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .task-grid { grid-template-columns: 1fr; } }
+.task-card {
+  position: relative; background: var(--card); border: 1px solid var(--line);
+  border-radius: var(--radius-sm); padding: 22px 18px 18px; cursor: pointer;
+  text-align: center; transition: transform .18s ease, box-shadow .18s ease, border-color .18s;
+  overflow: hidden;
+}
+.task-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 6px; background: var(--accent, #ccc); }
+.task-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-sm); border-color: transparent; }
+.task-card.is-active:hover { border-color: var(--accent); }
+.task-card__icon { width: 58px; height: 58px; margin: 8px auto 12px; border-radius: 16px; display: grid; place-items: center; font-size: 30px; background: var(--accent-soft, #eee); }
+.task-card__tag { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: .5px; color: var(--accent, #555); background: var(--accent-soft, #eee); padding: 3px 10px; border-radius: 999px; margin-bottom: 8px; }
+.task-card__name { font-size: 17px; font-weight: 800; color: var(--ink); }
+.task-card__sub { font-size: 12px; color: var(--ink-faint); margin-top: 5px; }
+.task-card__go { margin-top: 12px; font-size: 12px; font-weight: 700; color: var(--accent); opacity: 0; transition: .18s; }
+.task-card.is-active:hover .task-card__go { opacity: 1; }
+.task-card.is-disabled { cursor: not-allowed; opacity: .92; }
+.task-card.is-disabled:hover { transform: none; box-shadow: none; }
+.t-blue   { --accent: var(--c-blue);  --accent-soft: #e7f1fc; }
+.t-green  { --accent: var(--c-green); --accent-soft: #e3f6ee; }
+.t-orange { --accent: var(--c-orange);--accent-soft: #fdeede; }
+.t-purple { --accent: var(--c-purple);--accent-soft: #f1e9fb; }
+.t-teal   { --accent: var(--c-teal);  --accent-soft: #e1f6f3; }
+.t-gold   { --accent: var(--c-gold);  --accent-soft: #fdf3d6; }
+
+/* 二、Task3 详情页 */
+.report-wrap { max-width: 1040px; margin: 0 auto; padding: 22px 26px 48px; }
+.topbar { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
+.btn { border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; padding: 11px 18px; transition: .18s; display: inline-flex; align-items: center; gap: 8px; }
+.btn--ghost { background: #fff; color: var(--ink-soft); border: 1px solid var(--line); box-shadow: var(--shadow-sm); }
+.btn--ghost:hover { color: var(--ink); border-color: #d9dee7; }
+.btn--primary { background: linear-gradient(135deg, #f79a3e, var(--c-orange)); color: #fff; box-shadow: 0 8px 20px rgba(245, 133, 42, 0.35); margin-left: auto; }
+.btn--primary:hover { filter: brightness(1.05); transform: translateY(-1px); }
+.report-head { background: linear-gradient(135deg, #fff 60%, #fff7ee); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px 30px; box-shadow: var(--shadow-sm); position: relative; overflow: hidden; }
+.report-head::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 7px; background: linear-gradient(var(--c-orange), #f7b15e); }
+.report-head h1 { font-size: 25px; font-weight: 800; letter-spacing: .3px; }
+.report-head .sub-en { font-size: 14px; color: var(--ink-soft); margin-top: 6px; font-weight: 600; letter-spacing: .3px; }
+.report-head .sub-cn { font-size: 13px; color: var(--ink-faint); margin-top: 3px; }
+.participate { display: inline-flex; align-items: center; gap: 8px; margin-top: 16px; background: #eafaf2; color: #1d8a5e; font-size: 13px; font-weight: 700; padding: 8px 14px; border-radius: 999px; }
+.report-head__badge { position: absolute; right: 30px; top: 50%; transform: translateY(-50%); width: 84px; height: 84px; border-radius: 24px; background: linear-gradient(135deg, #fdeede, #fff7ee); border: 1px solid #f6e3d0; display: grid; place-items: center; font-size: 44px; box-shadow: 0 8px 20px rgba(245, 133, 42, 0.14); }
+.report-head__badge small { position: absolute; right: -8px; bottom: -6px; width: 34px; height: 34px; border-radius: 50%; background: #fff; border: 1px solid var(--line); box-shadow: var(--shadow-sm); display: grid; place-items: center; font-size: 18px; }
+@media (max-width: 640px) { .report-head__badge { display: none; } }
+.dimension__emoji { width: 34px; height: 34px; border-radius: 10px; background: var(--dim-soft, #f1f4f9); display: grid; place-items: center; font-size: 18px; flex: none; }
+.dimension { margin-top: 26px; }
+.dimension.d1 { --dim: #4A7FD6; --dim-soft: #e7f1fc; --dim-light: #6ba3ea; }
+.dimension.d2 { --dim: #E5852A; --dim-soft: #fdeede; --dim-light: #f5a55e; }
+.dimension.d3 { --dim: #1FA396; --dim-soft: #e1f6f3; --dim-light: #4fc3b8; }
+.dimension__title { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.dimension__num { width: 30px; height: 30px; border-radius: 9px; background: var(--dim, var(--c-orange)); color: #fff; font-size: 14px; font-weight: 800; display: grid; place-items: center; flex: none; }
+.dimension__title h2 { font-size: 17px; font-weight: 800; }
+.dimension__title span { font-size: 13.5px; color: var(--dim, var(--ink-soft)); font-weight: 800; white-space: nowrap; }
+.eval-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 760px) { .eval-grid { grid-template-columns: 1fr; } }
+.eval-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 18px 20px; box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: 16px; }
+.eval-card__idx { width: 34px; height: 34px; border-radius: 50%; background: var(--dim-soft, #fff2e4); color: var(--dim, var(--c-orange)); font-weight: 800; display: grid; place-items: center; flex: none; font-size: 16px; }
+.eval-card__main { flex: 1; min-width: 0; }
+.eval-card__name { font-size: 15px; font-weight: 700; line-height: 1.35; }
+.eval-card__cn { font-size: 12px; color: var(--ink-faint); margin-top: 3px; }
+.eval-card__bar { margin-top: 12px; height: 8px; background: #eef1f6; border-radius: 999px; overflow: hidden; }
+.eval-card__bar > i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--dim-light, #f7b15e), var(--dim, var(--c-orange))); width: 0; transition: width 1s cubic-bezier(.2,.8,.2,1); }
+.eval-card__score { text-align: right; flex: none; min-width: 76px; }
+.eval-card__num { font-size: 30px; font-weight: 900; line-height: 1; color: var(--dim, var(--c-orange)); }
+.eval-card__den { font-size: 15px; font-weight: 700; color: var(--ink-faint); }
+.eval-card__pct { font-size: 12px; color: var(--ink-soft); font-weight: 700; margin-top: 4px; }
+.note { margin-top: 30px; background: #f7f9fc; border: 1px dashed #d7deea; border-radius: 12px; padding: 14px 18px; font-size: 12.5px; color: var(--ink-soft); line-height: 1.7; }
+.note b { color: var(--ink); }
+
+/* 三、学情分析浮层 */
+.modal-mask { position: fixed; inset: 0; background: rgba(20, 28, 46, 0.5); backdrop-filter: blur(3px); display: none; align-items: center; justify-content: center; padding: 24px; z-index: 50; }
+.modal-mask.show { display: flex; animation: fade .2s ease; }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+.modal { width: 100%; max-width: 560px; background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; animation: pop .22s cubic-bezier(.2,.9,.3,1.2); }
+@keyframes pop { from { transform: translateY(14px) scale(.98); opacity: 0; } to { transform: none; opacity: 1; } }
+.modal__head { display: flex; align-items: center; gap: 10px; padding: 20px 24px 12px; }
+.modal__head .ic { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #f79a3e, var(--c-orange)); display: grid; place-items: center; font-size: 20px; }
+.modal__head h3 { font-size: 19px; font-weight: 800; flex: 1; }
+.modal__head .x { width: 34px; height: 34px; border-radius: 50%; border: none; background: #f1f3f7; color: var(--ink-soft); font-size: 18px; cursor: pointer; }
+.modal__head .x:hover { background: #e6e9f0; }
+.modal__body { padding: 4px 24px 24px; }
+.overall { text-align: center; background: linear-gradient(135deg, #fff7ee, #fff); border: 1px solid #f4e3d2; border-radius: 14px; padding: 18px; margin-bottom: 18px; }
+.overall .ring { font-size: 40px; font-weight: 900; color: var(--c-orange); line-height: 1; }
+.overall .ring small { font-size: 18px; color: var(--ink-faint); font-weight: 800; }
+.overall p { font-size: 13px; color: var(--ink-soft); margin-top: 6px; }
+.advice { margin-top: 18px; background: #f2f8ff; border-left: 4px solid var(--c-blue); border-radius: 0 12px 12px 0; padding: 15px 17px; font-size: 15px; color: #2b3a52; line-height: 1.75; }
+.advice b { color: var(--c-blue); }
+.toast { position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%) translateY(20px); background: rgba(31, 36, 48, 0.92); color: #fff; font-size: 14px; font-weight: 600; padding: 12px 22px; border-radius: 999px; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: .25s; z-index: 80; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* 四、三图弹层 */
+.modal--wide { max-width: 1040px; }
+.modal--wide .modal__body { max-height: calc(100vh - 140px); overflow-y: auto; padding: 4px 28px 28px; }
+.chart-block { margin-top: 26px; }
+.chart-block:first-of-type { margin-top: 8px; }
+.chart-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.chart-head .no { width: 26px; height: 26px; border-radius: 8px; background: #33415e; color: #fff; font-size: 13px; font-weight: 800; display: grid; place-items: center; flex: none; }
+.chart-head h4 { font-size: 16.5px; font-weight: 800; }
+.chart-head .role { margin-left: auto; font-size: 11.5px; font-weight: 700; color: var(--ink-soft); background: #f1f4f9; border-radius: 999px; padding: 4px 12px; }
+.chart-cap { font-size: 12.5px; color: var(--ink-faint); margin: 0 0 14px 36px; }
+.chart-panel { background: #fbfcfe; border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 18px 20px; }
+.hbar-row { display: flex; align-items: center; gap: 14px; margin: 13px 0; }
+.hbar-label { width: 250px; flex: none; text-align: right; }
+.hbar-label b { display: block; font-size: 13px; font-weight: 700; line-height: 1.25; }
+.hbar-label span { font-size: 11px; color: var(--ink-faint); }
+.hbar-track { flex: 1; position: relative; height: 26px; background: repeating-linear-gradient(to right, transparent 0, transparent calc(10% - 1px), #e8ecf3 calc(10% - 1px), #e8ecf3 10%); background-color: #f3f5f9; border-radius: 6px; overflow: hidden; }
+.hbar-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 6px; width: 0; transition: width 1s cubic-bezier(.2,.8,.2,1); display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; }
+.hbar-fill em { font-style: normal; font-size: 12.5px; font-weight: 800; color: #fff; white-space: nowrap; }
+.hbar-axis { display: flex; margin-left: 264px; margin-top: 2px; }
+.hbar-axis span { flex: 1; text-align: left; font-size: 10.5px; color: var(--ink-faint); border-left: 1px solid #dfe4ec; padding-left: 3px; }
+.dim-accuracy { background: linear-gradient(90deg, #6ba3ea, #4A7FD6); }
+.dim-care     { background: linear-gradient(90deg, #f5a55e, #E5852A); }
+.dim-culture  { background: linear-gradient(90deg, #4fc3b8, #1FA396); }
+.radar-wrap { display: flex; justify-content: center; padding: 4px 0; }
+.radar-wrap svg { max-width: 100%; height: auto; }
+.kpi-row { display: flex; align-items: center; gap: 16px; margin: 16px 0; }
+.kpi-name { width: 200px; flex: none; display: flex; align-items: center; gap: 10px; }
+.kpi-dot { width: 12px; height: 12px; border-radius: 4px; flex: none; }
+.kpi-name b { font-size: 15px; font-weight: 800; }
+.kpi-name span { font-size: 12px; color: var(--ink-faint); font-weight: 600; }
+.kpi-track { flex: 1; height: 22px; background: #f0f3f8; border-radius: 999px; overflow: hidden; position: relative; }
+.kpi-fill { height: 100%; border-radius: 999px; width: 0; transition: width 1.1s cubic-bezier(.2,.8,.2,1); }
+.kpi-val { width: 64px; flex: none; text-align: right; font-size: 17px; font-weight: 900; }
+.summary-block { margin-top: 26px; }
+.sum-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+@media (max-width: 760px) { .sum-grid { grid-template-columns: 1fr; } }
+.sum-card { border-radius: 12px; padding: 16px 18px; font-size: 15px; line-height: 1.75; }
+.sum-card b.t { display: block; font-size: 16px; font-weight: 800; margin-bottom: 5px; }
+.sum-card.up  { background: #eafaf2; border: 1px solid #c9efdd; color: #216248; }
+.sum-card.down{ background: #fdeede; border: 1px solid #f5d9bf; color: #8a5220; }
+.sum-card.dir { background: #f2f8ff; border: 1px solid #cfdef5; color: #2b3a52; }
+
+/* 五、全屏模式 */
+.modal__head .fs { width: 34px; height: 34px; border-radius: 50%; border: none; background: #f1f3f7; color: var(--ink-soft); font-size: 14px; cursor: pointer; margin-right: 8px; transition: .18s; }
+.modal__head .fs:hover { background: #e6e9f0; color: var(--ink); }
+.modal__head .fs.is-on { background: #e7f1fc; color: var(--c-blue); }
+.modal-mask:fullscreen, .modal-mask:-webkit-full-screen { background: #f7f9fc; backdrop-filter: none; -webkit-backdrop-filter: none; padding: 20px 28px; display: block; overflow-y: auto; }
+.modal-mask:fullscreen .modal, .modal-mask:-webkit-full-screen .modal { width: 100%; max-width: none; height: auto; min-height: calc(100vh - 40px); border-radius: 16px; box-shadow: none; background: #fff; }
+.modal-mask:fullscreen .modal__head, .modal-mask:-webkit-full-screen .modal__head { padding: 22px 36px 14px; border-bottom: 1px solid #eef1f6; }
+.modal-mask:fullscreen .modal__head h3, .modal-mask:-webkit-full-screen .modal__head h3 { font-size: 22px; }
+.modal-mask:fullscreen .modal__body, .modal-mask:-webkit-full-screen .modal__body { max-height: none; padding: 14px 36px 36px; overflow: visible; }
+.modal-mask:fullscreen .eval-card__num, .modal-mask:-webkit-full-screen .eval-card__num { font-size: 34px; }
+.modal-mask:fullscreen .chart-head h4, .modal-mask:-webkit-full-screen .chart-head h4 { font-size: 19px; }
+  </style>
+</head>
+<body>
+
+  <!-- ============ 学情数据中心（首页） ============ -->
+  <div class="overlay" id="dash">
+    <div class="dialog">
+      <div class="dialog__head">
+        <div class="dialog__badge">📊</div>
+        <div class="dialog__title">
+          <h1>学情数据中心</h1>
+          <p>Learning Analytics Center</p>
+        </div>
+        <button class="dialog__close" id="closeBtn" title="关闭">×</button>
+      </div>
+      <div class="dialog__sub">请选择任务，查看对应任务的 <b>学情诊断数据</b></div>
+      <div class="dialog__body">
+        <div class="task-grid" id="taskGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Task 3 报告详情 ============ -->
+  <div class="report-wrap" id="report" style="display:none">
+    <div class="topbar">
+      <button class="btn btn--ghost" onclick="goHome()">◀ 返回主页</button>
+      <button class="btn btn--primary" onclick="openAnalysis()">📊 学情分析</button>
+    </div>
+    <div class="report-head">
+      <h1 id="rTitle">Task 3 体检报告转述・角色扮演评价表</h1>
+      <div class="sub-en" id="rEn">Peer-Assessment Checklist</div>
+      <div class="sub-cn" id="rCn">学生互评表 — 角色扮演</div>
+      <div class="participate">✅ 共 <span id="rTotal">24</span> 名学生完成评价</div>
+      <div class="report-head__badge" title="体检报告 · 角色扮演">🩺<small>🎭</small></div>
+    </div>
+    <div id="dimRoot"></div>
+    <div class="note" id="rNote"></div>
+  </div>
+
+  <!-- ============ 学情可视化诊断 弹层 ============ -->
+  <div class="modal-mask" id="modal">
+    <div class="modal modal--wide">
+      <div class="modal__head">
+        <div class="ic">📈</div>
+        <h3>Task 3 学情可视化诊断</h3>
+        <button class="fs" id="fsBtn" onclick="toggleFS()" title="进入全屏（适配课堂大屏展示）">⛶</button>
+        <button class="x" onclick="closeAnalysis()">×</button>
+      </div>
+      <div class="modal__body">
+        <div class="participate" id="overallPill" style="margin-bottom:2px;"></div>
+
+        <div class="chart-block">
+          <div class="chart-head"><div class="no">1</div><h4>六项能力诊断 · 横向条形图</h4><span class="role">主图 · 定位强弱项</span></div>
+          <div class="chart-cap">Six-item Competency Diagnosis (sorted by achievement rate, high → low)</div>
+          <div class="chart-panel" id="chartBar"></div>
+        </div>
+
+        <div class="chart-block">
+          <div class="chart-head"><div class="no">2</div><h4>六项指标能力画像 · 雷达图</h4><span class="role">辅助 · 综合画像</span></div>
+          <div class="chart-cap">Competency Profile Radar (axis order identical to Chart 1)</div>
+          <div class="chart-panel radar-wrap" id="chartRadar"></div>
+        </div>
+
+        <div class="chart-block">
+          <div class="chart-head"><div class="no">3</div><h4>三大一级维度达成率 · KPI 进度条</h4><span class="role">概括 · 整体学情</span></div>
+          <div class="chart-cap">Dimension-level KPI Bars (average of the two sub-indicators)</div>
+          <div class="chart-panel" id="chartKpi"></div>
+        </div>
+
+        <div class="summary-block">
+          <div class="chart-head"><div class="no">✎</div><h4>学情分析总结</h4><span class="role">自动生成</span></div>
+          <div class="sum-grid" id="sumGrid"></div>
+          <div class="advice" id="sumAdvice" style="margin-top:12px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+  /* ====================== 预设数据 ====================== */
+  const TASKS = [
+    { id: 1, tag: 'Task 1', name: '体检接待',   en: 'Check-in & Reception',  icon: '🏥', cls: 't-blue',   output: '口头产出', ready: false },
+    { id: 2, tag: 'Task 2', name: '信息问询',   en: 'Health Inquiry',        icon: '📋', cls: 't-green',  output: '口头产出', ready: false },
+    { id: 3, tag: 'Task 3', name: '报告转述',   en: 'Report Retelling',      icon: '📄', cls: 't-orange', output: '口头产出', ready: true  },
+    { id: 4, tag: 'Task 4', name: '膳食指导',   en: 'Diet Guidance',         icon: '🥗', cls: 't-purple', output: '口头产出', ready: false },
+    { id: 5, tag: 'Task 5', name: '运动建议',   en: 'Exercise Advice',       icon: '🏃', cls: 't-teal',   output: '口头产出', ready: false },
+    { id: 6, tag: 'Task 6', name: '健康维持',   en: 'Wellness Maintenance',  icon: '💡', cls: 't-gold',   output: '口头产出', ready: false },
+  ];
+  const TASK3 = {
+    title: 'Task 3 体检报告转述・角色扮演评价表',
+    titleEn: 'Peer-Assessment Checklist of Role-play',
+    subtitleCn: '学生互评表 — 角色扮演',
+    total: 24,
+    dimensions: [
+      { num: 1, nameEn: 'Professional English Expression Accuracy', nameCn: '专业英语表达准确度', items: [
+        { idx: '①', nameEn: 'Mild/range-based descriptions', nameCn: '适度、区间化表述', identified: 19, total: 24 },
+        { idx: '②', nameEn: 'Clear explanation of health indicators', nameCn: '健康指标清晰讲解', identified: 16, total: 24 },
+      ]},
+      { num: 2, nameEn: 'Humanistic Communication Literacy', nameCn: '人文沟通服务素养', items: [
+        { idx: '③', nameEn: 'Empathy sentence patterns', nameCn: '共情句式运用', identified: 20, total: 24 },
+        { idx: '④', nameEn: 'Active inquiries', nameCn: '主动问询沟通', identified: 15, total: 24 },
+      ]},
+      { num: 3, nameEn: 'Cross-cultural Dissemination of Chinese Wellness Culture', nameCn: '中华康养文化跨文化传播', items: [
+        { idx: '⑤', nameEn: 'Tai Chi introduced appropriately', nameCn: '太极拳恰当介绍', identified: 18, total: 24 },
+        { idx: '⑥', nameEn: 'Natural cultural expression', nameCn: '自然的文化表达', identified: 17, total: 24 },
+      ]},
+    ],
+    note: '次数仅统计恰当使用的表达；“自然”指表达不生硬、不突兀，并能联系客户需求。',
+  };
+  const D = TASK3;
+
+  /* ====================== 学情数据中心 ====================== */
+  const grid = document.getElementById('taskGrid');
+  const toastEl = document.getElementById('toast');
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toastEl.classList.remove('show'), 2200);
+  }
+  TASKS.forEach(t => {
+    const card = document.createElement('div');
+    card.className = 'task-card ' + t.cls + (t.ready ? ' is-active' : ' is-disabled');
+    card.innerHTML = `
+      <div class="task-card__icon">${t.icon}</div>
+      <div class="task-card__tag">${t.tag}</div>
+      <div class="task-card__name">${t.name}</div>
+      <div class="task-card__sub">${t.en} · ${t.output}</div>
+      <div class="task-card__go">${t.ready ? '进入查看 →' : '数据准备中'}</div>`;
+    card.addEventListener('click', () => {
+      if (t.ready) openReport();
+      else showToast(`「${t.name}」的学情数据正在准备中…`);
+    });
+    grid.appendChild(card);
+  });
+  document.getElementById('closeBtn').addEventListener('click', () => showToast('已退出学情数据中心'));
+
+  function openReport() {
+    document.getElementById('dash').style.display = 'none';
+    document.getElementById('report').style.display = 'block';
+    window.scrollTo(0, 0);
+  }
+  function goHome() {
+    document.getElementById('report').style.display = 'none';
+    document.getElementById('dash').style.display = 'flex';
+  }
+
+  /* ====================== 报告主体 ====================== */
+  document.getElementById('rTitle').textContent = D.title;
+  document.getElementById('rEn').textContent    = D.titleEn;
+  document.getElementById('rCn').textContent    = D.subtitleCn;
+  document.getElementById('rTotal').textContent = D.total;
+  document.getElementById('rNote').innerHTML    = '📌 操作提示：' + D.note;
+
+  const dimRoot = document.getElementById('dimRoot');
+  const flat = [];
+  const COLORS = {
+    '①': '#4A7FD6', '②': '#1FA396', '③': '#E5852A',
+    '④': '#9B6DD6', '⑤': '#C04A8C', '⑥': '#6DA34E',
+  };
+  const DIM_KEYS = { 1: 'accuracy', 2: 'care', 3: 'culture' };
+  const DIM_NAME = { 1: 'Accuracy', 2: 'Care', 3: 'Culture' };
+  const DIM_CN   = { 1: '准确', 2: '关怀', 3: '文化' };
+  const DIM_ICON = { 1: '🎯', 2: '💬', 3: '☯️' };
+
+  D.dimensions.forEach(dim => {
+    const sec = document.createElement('div');
+    sec.className = 'dimension d' + dim.num;
+    sec.innerHTML = `
+      <div class="dimension__title">
+        <div class="dimension__emoji">${DIM_ICON[dim.num]}</div>
+        <div class="dimension__num">${dim.num}</div>
+        <h2>${dim.nameEn}</h2>
+        <span>${dim.nameCn}</span>
+      </div>
+      <div class="eval-grid"></div>`;
+    const grid2 = sec.querySelector('.eval-grid');
+    dim.items.forEach(it => {
+      const pct = +(it.identified / it.total * 100).toFixed(1);
+      const card = document.createElement('div');
+      card.className = 'eval-card';
+      card.innerHTML = `
+        <div class="eval-card__idx">${it.idx}</div>
+        <div class="eval-card__main">
+          <div class="eval-card__name">${it.nameEn}</div>
+          <div class="eval-card__cn">${it.nameCn}</div>
+          <div class="eval-card__bar"><i data-w="${pct}"></i></div>
+        </div>
+        <div class="eval-card__score">
+          <div><span class="eval-card__num">${it.identified}</span><span class="eval-card__den">/${it.total}</span></div>
+          <div class="eval-card__pct">达成率 ${pct}%</div>
+        </div>`;
+      grid2.appendChild(card);
+      flat.push({ ...it, pct, dim: dim.num });
+    });
+    dimRoot.appendChild(sec);
+  });
+
+  const sorted = [...flat].sort((a, b) => b.pct - a.pct);
+  const best = sorted[0], second = sorted[1], weak = sorted[sorted.length - 1], weak2 = sorted[sorted.length - 2];
+
+  /* 图1 横向条形图 */
+  function buildBar() {
+    const host = document.getElementById('chartBar');
+    const rows = sorted.map(x => `
+      <div class="hbar-row">
+        <div class="hbar-label"><b>${x.nameEn}</b><span>${x.nameCn}</span></div>
+        <div class="hbar-track"><div class="hbar-fill" style="background:${COLORS[x.idx]}" data-w="${x.pct}"><em>${x.pct}%</em></div></div>
+      </div>`).join('');
+    const axis = [0,20,40,60,80,100].map(v => `<span>${v}%</span>`).join('');
+    host.innerHTML = rows + `<div class="hbar-axis">${axis}</div>`;
+  }
+
+  /* 图2 雷达图 */
+  function buildRadar() {
+    const W = 640, H = 470, cx = 320, cy = 240, R = 158, N = sorted.length;
+    const pt = (i, r) => {
+      const a = -Math.PI / 2 + i * 2 * Math.PI / N;
+      return [cx + r * Math.cos(a), cy + r * Math.sin(a), a];
+    };
+    let gridD = '';
+    [0.25, 0.5, 0.75, 1].forEach(lv => {
+      const pts = sorted.map((_, i) => pt(i, R * lv).slice(0, 2).join(',')).join(' ');
+      gridD += `<polygon points="${pts}" fill="none" stroke="#e3e8f0" stroke-width="1"/>`;
+    });
+    sorted.forEach((_, i) => {
+      const [x, y] = pt(i, R);
+      gridD += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#dfe4ee" stroke-width="1"/>`;
+    });
+    [25, 50, 75, 100].forEach(v => {
+      const [x, y] = pt(0, R * v / 100);
+      gridD += `<text x="${x + 6}" y="${y - 4}" font-size="9.5" fill="#aab3c2">${v}</text>`;
+    });
+    const dataPts = sorted.map((x, i) => ({ p: pt(i, R * x.pct / 100).slice(0, 2), idx: x.idx }));
+    const poly = dataPts.map(d => d.p.join(',')).join(' ');
+    let dots = '';
+    dataPts.forEach(d => {
+      const c = COLORS[d.idx] || '#4A7FD6';
+      dots += `<circle cx="${d.p[0]}" cy="${d.p[1]}" r="4" fill="${c}" stroke="#fff" stroke-width="1.5"/>`;
+    });
+    const area = `<g class="radar-data"><polygon points="${poly}" fill="rgba(74,127,214,0.22)" stroke="#4A7FD6" stroke-width="2.5" stroke-linejoin="round"/>${dots}</g>`;
+    const labels = sorted.map((x, i) => {
+      const [lx, ly, a] = pt(i, R + 28);
+      const cos = Math.cos(a), sin = Math.sin(a);
+      let anchor = 'middle';
+      if (cos > 0.35) anchor = 'start';
+      if (cos < -0.35) anchor = 'end';
+      let dy = -2;
+      if (sin > 0.7) dy = 18; else if (sin < -0.7) dy = -2;
+      const c = COLORS[x.idx];
+      return `<text x="${lx}" y="${ly + dy}" text-anchor="${anchor}">
+        <tspan x="${lx}" dy="0" font-size="11.5" font-weight="800" fill="${c}">${x.nameEn}</tspan>
+        <tspan x="${lx}" dy="13" font-size="10" fill="#9aa3b1">${x.nameCn} · ${x.pct}%</tspan></text>`;
+    }).join('');
+    document.getElementById('chartRadar').innerHTML =
+      `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="六项指标雷达图">${gridD}${area}${labels}</svg>`;
+  }
+
+  /* 图3 维度 KPI */
+  function buildKpi() {
+    const host = document.getElementById('chartKpi');
+    const colors = { 1: ['dim-accuracy', '#4A7FD6'], 2: ['dim-care', '#E5852A'], 3: ['dim-culture', '#1FA396'] };
+    let html = '';
+    [1, 2, 3].forEach(n => {
+      const items = flat.filter(x => x.dim === n);
+      const avg = +(items.reduce((s, x) => s + x.pct, 0) / items.length).toFixed(1);
+      const [cls, c] = colors[n];
+      html += `
+        <div class="kpi-row">
+          <div class="kpi-name"><div class="kpi-dot" style="background:${c}"></div><div><b>${DIM_NAME[n]}</b> <span>${DIM_CN[n]}</span></div></div>
+          <div class="kpi-track"><div class="kpi-fill ${cls}" data-w="${avg}"></div></div>
+          <div class="kpi-val" style="color:${c}">${avg}%</div>
+        </div>`;
+    });
+    host.innerHTML = html;
+  }
+
+  /* 总结 */
+  function buildSummary() {
+    const totalId = flat.reduce((s, x) => s + x.identified, 0);
+    const totalAll = flat.reduce((s, x) => s + x.total, 0);
+    const overall = +(totalId / totalAll * 100).toFixed(1);
+    document.getElementById('overallPill').innerHTML =
+      `🎯 全班总体达成率 <b>&nbsp;${overall}%&nbsp;</b>（${totalId}/${totalAll}，共 ${D.total} 名学生参与评价）`;
+    document.getElementById('sumGrid').innerHTML = `
+      <div class="sum-card up"><b class="t">🔺 优势模块</b>「${best.nameCn}」达成率最高（${best.pct}%），「${second.nameCn}」次之（${second.pct}%），表明学生在专业表达柔化与共情沟通方面基础扎实。</div>
+      <div class="sum-card down"><b class="t">🔻 薄弱模块</b>「${weak.nameCn}」仅 ${weak.pct}%，「${weak2.nameCn}」${weak2.pct}%，主动问询意识与健康指标清晰讲解能力是当前最突出的两个短板。</div>
+      <div class="sum-card dir"><b class="t">🧭 教学建议</b>下一环节建议：①以问询句型支架（Ask-before-Advise）强化主动问询训练；②用「总—分—总」结构模板强化健康指标讲解的复述逻辑；③以共情句式优秀表达为同伴范例推广互评。</div>`;
+    const dims = [1, 2, 3].map(n => {
+      const items = flat.filter(x => x.dim === n);
+      return { n, avg: +(items.reduce((s, x) => s + x.pct, 0) / items.length).toFixed(1) };
+    });
+    const spread = +(best.pct - weak.pct).toFixed(1);
+    document.getElementById('sumAdvice').innerHTML =
+      `<b>整体特征：</b>三大维度达成率分别为 ${dims.map(d => `${DIM_NAME[d.n]}（${DIM_CN[d.n]}）${d.avg}%`).join('、')}，整体水平均衡（总体 ${overall}%）；但单项极差达 <b>${spread} 个百分点</b>，维度内部发展不均衡 —— 建议以「弱项专项训练 + 强项同伴示范」双线推进，实现均衡提升。`;
+  }
+
+  /* ====================== 弹层控制 ====================== */
+  let built = false;
+  function openAnalysis() {
+    if (!built) { buildBar(); buildRadar(); buildKpi(); buildSummary(); built = true; }
+    document.getElementById('modal').classList.add('show');
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.eval-card__bar > i, .hbar-fill, .kpi-fill').forEach(b => { b.style.width = b.dataset.w + '%'; });
+      const g = document.querySelector('.radar-data');
+      if (g) g.style.opacity = 1;
+    });
+  }
+  function closeAnalysis() { document.getElementById('modal').classList.remove('show'); }
+  document.getElementById('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeAnalysis(); });
+
+  function toggleFS() {
+    const el = document.querySelector('.modal-mask');
+    if (!document.fullscreenElement) { (el.requestFullscreen || el.webkitRequestFullscreen).call(el); }
+    else { (document.exitFullscreen || document.webkitExitFullscreen).call(document); }
+  }
+  document.addEventListener('fullscreenchange', () => {
+    const btn = document.getElementById('fsBtn');
+    if (!btn) return;
+    const on = !!document.fullscreenElement;
+    btn.textContent = on ? '⛝' : '⛶';
+    btn.title = on ? '退出全屏（ESC）' : '进入全屏（适配课堂大屏展示）';
+    btn.classList.toggle('is-on', on);
+  });
+
+  /* 报告卡片进度条入场动画 */
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.eval-card__bar > i').forEach(b => { b.style.width = b.dataset.w + '%'; });
+  });
+  const radStyle = document.createElement('style');
+  radStyle.textContent = '.radar-data{opacity:0;transition:opacity .8s ease .15s;}';
+  document.head.appendChild(radStyle);
+  
+  /* Auto-open Task 3 report when embedded via iframe (?task=3) */
+  (function () {
+    try {
+      var q = new URLSearchParams(location.search);
+      var h = (location.hash || '').replace('#', '');
+      if (q.get('task') === '3' || h === 'task3' || q.get('report') === '1') openReport();
+    } catch (e) {}
+  })();
+</script>
+</body>
+</html>

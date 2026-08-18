@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="涉外体检英语">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>高职英语（三）涉外体检职场英语 — 课程工作台</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/app-icon-180.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="icons/app-icon-167.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/app-icon-152.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="icons/app-icon-120.png">
+  <link rel="manifest" href="manifest.json">
+  <!-- Chart.js for data visualization (local) -->
+  <script src="js/lib/chart.umd.min.js"></script>
+  <!-- QRCode.js for QR code generation (local) -->
+  <script src="js/lib/qrcode.min.js"></script>
+</head>
+<body>
+
+  <!-- ======== 侧边栏 ======== -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon">🏥</div>
+        <div>
+          <div>课程工作台</div>
+        </div>
+      </div>
+      <div class="course-name" id="course-name-display">高职英语（三）涉外体检职场英语</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav">
+      <!-- 导航项由 app.js 动态渲染 -->
+    </nav>
+    <div class="sidebar-footer">
+      <div class="poa-tag" id="poa-tag">POA产出导向</div>
+      <div>公共英语拓展课程 · 18课时</div>
+      <div style="margin-top: 4px; opacity: 0.6;">仅评英语交际能力</div>
+    </div>
+  </aside>
+
+  <!-- ======== 主内容区 ======== -->
+  <main class="main-content">
+    <div class="page-header">
+      <h1 id="page-title">课程总览</h1>
+      <div class="header-actions">
+        <button class="btn btn-outline btn-sm" onclick="showToast('数据已归档')">📦 数据归档</button>
+        <button class="btn btn-outline btn-sm" onclick="showToast('全套资料导出中...')">📥 批量导出</button>
+      </div>
+    </div>
+    <div id="page-content">
+      <!-- 页面内容由 app.js 动态渲染 -->
+    </div>
+  </main>
+
+  <!-- ======== 通用弹窗 ======== -->
+  <div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modal-title">标题</h2>
+        <div class="modal-header__actions">
+          <button class="modal-close" onclick="closeModal()">×</button>
+        </div>
+      </div>
+      <div class="modal-body" id="modal-body">
+        <!-- 弹窗内容由 app.js 动态填充 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== 脚本 ======== -->
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

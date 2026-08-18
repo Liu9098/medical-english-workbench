@@ -1,0 +1,2054 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>角色扮演质检工作台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ========================================
+   Design Tokens — Dark Medical Theme
+   ======================================== */
+:root {
+  /* Background layers */
+  --bg-overlay:      rgba(4, 18, 34, 0.82);
+  --bg-card:         rgba(8, 28, 50, 0.90);
+  --bg-card-hover:   rgba(14, 38, 66, 0.94);
+  --bg-input:        rgba(255,255,255,0.06);
+  --bg-input-hover:  rgba(255,255,255,0.10);
+
+  /* Text */
+  --ink:             #ffffff;
+  --ink-bright:      #e0ecf8;
+  --ink-muted:       #9ab0c4;
+  --ink-faint:       #6a8098;
+  --ink-dim:         #4a6078;
+
+  /* Borders */
+  --rule:            rgba(255,255,255,0.10);
+  --rule-strong:     rgba(255,255,255,0.18);
+
+  /* Section colors — brightened for dark bg */
+  --c-highlight:     #34d399;
+  --c-highlight-bg:  rgba(52, 211, 153, 0.12);
+  --c-highlight-bd:  rgba(52, 211, 153, 0.28);
+  --c-optimize:      #fb923c;
+  --c-optimize-bg:   rgba(251, 146, 60, 0.12);
+  --c-optimize-bd:   rgba(251, 146, 60, 0.28);
+  --c-recommend:     #818cf8;
+  --c-recommend-bg:  rgba(129, 140, 248, 0.12);
+  --c-recommend-bd:  rgba(129, 140, 248, 0.28);
+
+  /* Dimension colors */
+  --c-dim1:          #34d399;
+  --c-dim1-bg:       rgba(52, 211, 153, 0.12);
+  --c-dim2:          #fb923c;
+  --c-dim2-bg:       rgba(251, 146, 60, 0.12);
+  --c-dim3:          #818cf8;
+  --c-dim3-bg:       rgba(129, 140, 248, 0.12);
+
+  /* Task nav */
+  --c-task-active:   #34d399;
+  --c-task-active-bg:rgba(52, 211, 153, 0.18);
+  --c-task-inactive: #4a6078;
+  --c-task-inactive-bg: rgba(255,255,255,0.05);
+
+  /* Fonts */
+  --font-display:  'Lora', 'Noto Serif SC', Georgia, serif;
+  --font-body:     'Plus Jakarta Sans', 'Noto Sans SC', system-ui, sans-serif;
+
+  /* Radius & Shadow */
+  --r-sm: 8px; --r-md: 12px; --r-lg: 18px; --r-xl: 26px;
+  --shadow-sm:   0 2px 6px rgba(0,0,0,.25);
+  --shadow-card: 0 4px 16px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.2);
+  --shadow-lift: 0 8px 32px rgba(0,0,0,.45), 0 2px 6px rgba(0,0,0,.25);
+  --t-fast: 180ms cubic-bezier(.4,0,.2,1);
+  --t-normal: 350ms cubic-bezier(.4,0,.2,1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 18px; }
+
+body {
+  font-family: var(--font-body);
+  color: var(--ink);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  background:
+    linear-gradient(180deg, rgba(4,18,34,0.78) 0%, rgba(4,18,34,0.88) 100%),
+    url('bg-medical.png') center/cover no-repeat fixed;
+  min-height: 100vh;
+}
+
+/* ========================================
+   Page Container
+   ======================================== */
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: all var(--t-normal);
+  pointer-events: none;
+  position: absolute;
+  top: 0; left: 0; right: 0;
+}
+
+.page--active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: all;
+  position: relative;
+}
+
+.page--report {
+  justify-content: flex-start;
+  padding: 0;
+}
+
+/* ========================================
+   Dashboard Page
+   ======================================== */
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 640px;
+  width: 100%;
+}
+
+/* — Task Navigation Bar — */
+.task-nav {
+  display: flex;
+  gap: .5rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.task-nav__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .25rem;
+  padding: .625rem .875rem;
+  border-radius: var(--r-md);
+  background: var(--c-task-inactive-bg);
+  border: 1px solid var(--rule);
+  color: var(--c-task-inactive);
+  font-size: .8125rem;
+  font-weight: 600;
+  cursor: default;
+  transition: all var(--t-fast);
+  min-width: 90px;
+}
+
+.task-nav__item--active {
+  background: var(--c-task-active-bg);
+  border-color: rgba(52,211,153,0.35);
+  color: var(--c-task-active);
+  box-shadow: 0 0 16px rgba(52,211,153,0.12);
+}
+
+.task-nav__item--active .task-nav__num {
+  background: var(--c-task-active);
+  color: #042218;
+}
+
+.task-nav__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--c-task-inactive);
+  color: #0a1a2e;
+  font-size: .6875rem;
+  font-weight: 800;
+}
+
+.task-nav__name {
+  font-size: .75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+
+.task-nav__en {
+  font-size: .5625rem;
+  font-weight: 400;
+  color: inherit;
+  opacity: .75;
+  white-space: nowrap;
+  line-height: 1.3;
+  font-style: italic;
+  font-family: var(--font-display);
+}
+
+.task-nav__badge {
+  font-size: .625rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 100px;
+  background: rgba(52,211,153,0.2);
+  color: #34d399;
+}
+
+/* — Dashboard header — */
+.dashboard__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .8125rem;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--c-highlight);
+  margin-bottom: 1.25rem;
+}
+
+.dashboard__badge::before,
+.dashboard__badge::after {
+  content: '';
+  width: 24px;
+  height: 2px;
+  background: var(--c-highlight);
+  opacity: .5;
+  border-radius: 2px;
+}
+
+.dashboard__title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4.5vw, 2.875rem);
+  font-weight: 600;
+  letter-spacing: -.02em;
+  color: var(--ink);
+  margin-bottom: .875rem;
+  line-height: 1.2;
+  text-shadow: 0 2px 12px rgba(0,0,0,.3);
+}
+
+.dashboard__title em {
+  font-style: italic;
+  color: var(--c-highlight);
+}
+
+.dashboard__subtitle {
+  font-size: 1.375rem;
+  color: var(--ink-muted);
+  max-width: 520px;
+  line-height: 1.5;
+  margin-bottom: 2.5rem;
+}
+
+/* — Selector card — */
+.selector-card {
+  background: var(--bg-card);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-card);
+  padding: 2rem;
+  width: 100%;
+  text-align: left;
+  backdrop-filter: blur(12px);
+}
+
+.selector-card__label {
+  font-size: .8125rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 1rem;
+}
+
+.selector-row {
+  display: flex;
+  gap: .875rem;
+  align-items: stretch;
+}
+
+/* — Custom Dropdown — */
+.dropdown {
+  flex: 1;
+  position: relative;
+}
+
+.dropdown__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: .875rem 1.125rem;
+  background: var(--bg-input);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-md);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+  transition: all var(--t-fast);
+  gap: .875rem;
+}
+
+.dropdown__trigger:hover {
+  background: var(--bg-input-hover);
+  border-color: var(--rule-strong);
+}
+
+.dropdown--open .dropdown__trigger {
+  border-color: var(--ink-muted);
+  box-shadow: 0 0 0 3px rgba(129,140,248,0.15);
+}
+
+.dropdown__trigger-placeholder {
+  color: var(--ink-faint);
+  font-weight: 400;
+}
+
+.dropdown__trigger-arrow {
+  width: 20px;
+  height: 20px;
+  color: var(--ink-faint);
+  transition: transform var(--t-fast);
+}
+
+.dropdown--open .dropdown__trigger-arrow {
+  transform: rotate(180deg);
+}
+
+.dropdown__menu {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  right: 0;
+  background: var(--bg-card-hover);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-lift);
+  z-index: 20;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: all var(--t-fast);
+}
+
+.dropdown--open .dropdown__menu {
+  max-height: 340px;
+  opacity: 1;
+}
+
+.dropdown__option {
+  display: flex;
+  align-items: center;
+  gap: .875rem;
+  padding: .875rem 1.125rem;
+  cursor: pointer;
+  transition: all var(--t-fast);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--ink-bright);
+}
+
+.dropdown__option:hover {
+  background: var(--bg-input-hover);
+}
+
+.dropdown__option:first-child { border-radius: var(--r-md) var(--r-md) 0 0; }
+.dropdown__option:last-child  { border-radius: 0 0 var(--r-md) var(--r-md); }
+
+.dropdown__option:not(:last-child) {
+  border-bottom: 1px solid var(--rule);
+}
+
+.dropdown__option-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dropdown__option:nth-child(1) .dropdown__option-dot { background: var(--c-highlight); }
+.dropdown__option:nth-child(2) .dropdown__option-dot { background: var(--c-optimize); }
+.dropdown__option:nth-child(3) .dropdown__option-dot { background: var(--c-recommend); }
+.dropdown__option:nth-child(4) .dropdown__option-dot { background: #fbbf24; }
+.dropdown__option:nth-child(5) .dropdown__option-dot { background: #38bdf8; }
+
+/* — View button — */
+.btn-view {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  padding: .875rem 1.75rem;
+  background: var(--ink);
+  color: #0a1628;
+  border: none;
+  border-radius: var(--r-md);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--t-fast);
+  white-space: nowrap;
+  min-width: 110px;
+}
+
+.btn-view:hover:not(:disabled) {
+  background: var(--ink-bright);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lift);
+}
+
+.btn-view:disabled {
+  opacity: .38;
+  cursor: not-allowed;
+}
+
+.btn-view svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* — Footer hints — */
+.dashboard__hints {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1.75rem;
+  font-size: .8125rem;
+  color: var(--ink-faint);
+}
+
+.dashboard__hint {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.dashboard__hint kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--rule);
+  border-radius: 5px;
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--ink-muted);
+  font-family: var(--font-body);
+}
+
+/* ========================================
+   Stage Ready — 开始质检按钮
+   ======================================== */
+.stage-ready {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* — 已发布状态按钮（灰色不可点，表示教师已发布任务） — */
+.btn-published {
+  display: inline-flex;
+  align-items: center;
+  gap: .875rem;
+  padding: 1.125rem 2.75rem;
+  background: #334155;
+  color: #c3cede;
+  border: 1px solid #475569;
+  border-radius: 100px;
+  font-family: var(--font-body);
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+  cursor: default;
+  box-shadow: var(--shadow-card);
+  user-select: none;
+}
+
+.btn-published svg { width: 24px; height: 24px; color: #94a3b8; }
+
+.btn-published__en {
+  display: block;
+  font-size: .75rem;
+  font-weight: 600;
+  color: #8ea6bf;
+  letter-spacing: .04em;
+  margin-top: 2px;
+}
+
+/* — 绿色主按钮：选择小组查看报告 — */
+.btn-start {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .75rem;
+  margin-top: 1.5rem;
+  padding: 1.1rem 2.75rem;
+  background: linear-gradient(135deg, #34d399 0%, #0f9e77 100%);
+  color: #042218;
+  border: none;
+  border-radius: 100px;
+  font-family: var(--font-body);
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: .02em;
+  cursor: pointer;
+  box-shadow: 0 8px 28px rgba(52,211,153,.35), var(--shadow-card);
+  transition: all var(--t-fast);
+}
+
+.btn-start:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 36px rgba(52,211,153,.45), var(--shadow-lift);
+}
+
+.btn-start:active { transform: translateY(0); }
+
+.btn-start svg { width: 24px; height: 24px; }
+
+.stage-ready__hint {
+  margin-top: 1.25rem;
+  font-size: .875rem;
+  color: var(--ink-faint);
+  max-width: 480px;
+  line-height: 1.7;
+}
+
+/* ========================================
+   Select Stage — 小组选择页
+   ======================================== */
+.select-stage { width: 100%; text-align: left; }
+
+.select-stage__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.select-stage__title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.select-stage__title svg { width: 18px; height: 18px; color: var(--c-highlight); }
+
+.select-stage__footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  margin-top: 1.75rem;
+  flex-wrap: wrap;
+}
+
+.select-stage__hint {
+  font-size: .875rem;
+  color: var(--ink-faint);
+}
+
+.select-stage__hint strong { color: var(--c-highlight); }
+
+.btn-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  padding: .5rem 1rem;
+  border-radius: 100px;
+  font-size: .8125rem;
+  font-weight: 600;
+  color: var(--ink-faint);
+  background: var(--bg-input);
+  border: 1px solid var(--rule);
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all var(--t-fast);
+  white-space: nowrap;
+}
+
+.btn-reset:hover { color: var(--ink); border-color: var(--rule-strong); background: var(--bg-input-hover); }
+
+/* — 小组卡片网格 — */
+.group-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: .875rem;
+  margin-bottom: 1.25rem;
+}
+
+.group-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .5rem;
+  padding: 1.125rem .75rem;
+  background: var(--bg-card);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-lg);
+  cursor: pointer;
+  transition: all var(--t-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.group-card:hover {
+  border-color: var(--rule-strong);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card);
+}
+
+.group-card--selected {
+  border-color: rgba(52,211,153,.6);
+  box-shadow: 0 0 0 3px rgba(52,211,153,.15);
+}
+
+.group-card--submitted {
+  border-color: rgba(52,211,153,.4);
+  background: var(--c-highlight-bg);
+}
+
+.group-card__name { font-size: 1rem; font-weight: 700; color: var(--ink); }
+
+.group-card__status {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  font-size: .75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 100px;
+  background: var(--bg-input);
+  color: var(--ink-faint);
+}
+
+.group-card--submitted .group-card__status {
+  background: var(--c-highlight-bg);
+  color: var(--c-highlight);
+}
+
+.group-card__status-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+.group-card__hint { font-size: .6875rem; color: var(--ink-dim); }
+
+/* — 文案提交卡片 — */
+.submit-card {
+  background: var(--bg-card);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-card);
+  padding: 1.5rem;
+  backdrop-filter: blur(12px);
+}
+
+.submit-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.submit-card__group { font-size: 1.125rem; font-weight: 700; color: var(--ink); }
+
+.submit-card__badge {
+  font-size: .75rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 100px;
+  background: var(--bg-input);
+  color: var(--ink-faint);
+  transition: all var(--t-fast);
+}
+
+.submit-card__badge--done {
+  background: var(--c-highlight-bg);
+  color: var(--c-highlight);
+}
+
+.submit-card__textarea {
+  width: 100%;
+  min-height: 150px;
+  resize: vertical;
+  padding: 1rem 1.125rem;
+  background: var(--bg-input);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-md);
+  color: var(--ink-bright);
+  font-family: var(--font-body);
+  font-size: .9375rem;
+  line-height: 1.6;
+  transition: all var(--t-fast);
+}
+
+.submit-card__textarea:focus {
+  outline: none;
+  border-color: var(--c-highlight);
+  box-shadow: 0 0 0 3px rgba(52,211,153,.15);
+}
+
+.submit-card__textarea::placeholder { color: var(--ink-dim); }
+
+.submit-card__actions {
+  display: flex;
+  gap: .875rem;
+  margin-top: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.btn-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .875rem 1.75rem;
+  background: var(--ink);
+  color: #0a1628;
+  border: none;
+  border-radius: var(--r-md);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--t-fast);
+  white-space: nowrap;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background: var(--ink-bright);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lift);
+}
+
+.btn-submit:disabled { opacity: .35; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.submit-card__done-hint {
+  font-size: .875rem;
+  color: var(--c-highlight);
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .group-grid { grid-template-columns: repeat(2, 1fr); }
+  .btn-start { padding: 1rem 2rem; font-size: 1.125rem; }
+  .select-stage__bar { flex-wrap: wrap; }
+}
+
+/* ========================================
+   Report Page
+   ======================================== */
+.report-page {
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 2rem 2.5rem 3.5rem;
+}
+
+/* — Top Bar — */
+.report-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.125rem 2.5rem;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--rule);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(16px);
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .625rem 1rem;
+  border-radius: 100px;
+  font-size: .875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--t-fast);
+  border: 1px solid var(--rule);
+  background: var(--bg-input);
+  color: var(--ink-muted);
+  font-family: var(--font-body);
+}
+
+.btn-back:hover {
+  border-color: var(--ink-faint);
+  color: var(--ink);
+  background: var(--bg-input-hover);
+}
+
+.btn-back svg {
+  width: 16px;
+  height: 16px;
+}
+
+.report-topbar__group {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.report-topbar__scenario {
+  font-size: .8125rem;
+  color: var(--ink-faint);
+}
+
+/* — Report Title — */
+.report-title {
+  margin-top: 2.5rem;
+  margin-bottom: 2rem;
+}
+
+.report-title__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .8125rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--c-highlight);
+  margin-bottom: .625rem;
+}
+
+.report-title__eyebrow::before {
+  content: '';
+  width: 28px;
+  height: 2.5px;
+  background: var(--c-highlight);
+  border-radius: 2px;
+}
+
+.report-title__heading {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3.2vw, 2.375rem);
+  font-weight: 600;
+  letter-spacing: -.01em;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+.report-title__note {
+  font-size: .9375rem;
+  color: var(--ink-faint);
+  margin-top: .5rem;
+}
+
+/* ========================================
+   Dimension Indicator Cards
+   ======================================== */
+.dim-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 3rem;
+}
+
+.dim-card {
+  background: var(--bg-card);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--t-fast);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+}
+
+.dim-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+}
+
+.dim-card--dim1::before { background: var(--c-dim1); }
+.dim-card--dim2::before { background: var(--c-dim2); }
+.dim-card--dim3::before { background: var(--c-dim3); }
+
+.dim-card:hover {
+  box-shadow: var(--shadow-card);
+  transform: translateY(-2px);
+  border-color: var(--rule-strong);
+}
+
+.dim-card__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  font-size: .8125rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 1rem;
+}
+
+.dim-card--dim1 .dim-card__num { background: var(--c-dim1); }
+.dim-card--dim2 .dim-card__num { background: var(--c-dim2); }
+.dim-card--dim3 .dim-card__num { background: var(--c-dim3); }
+
+.dim-card__name {
+  font-size: .9375rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 1rem;
+  line-height: 1.45;
+}
+
+/* — Dot meter — */
+.dim-meter {
+  display: flex;
+  gap: 8px;
+  margin-bottom: .625rem;
+}
+
+.dim-meter__dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  transition: all var(--t-fast);
+}
+
+.dim-meter__dot--filled { background: currentColor; }
+
+.dim-card--dim1 .dim-meter__dot--filled { color: var(--c-dim1); }
+.dim-card--dim2 .dim-meter__dot--filled { color: var(--c-dim2); }
+.dim-card--dim3 .dim-meter__dot--filled { color: var(--c-dim3); }
+
+.dim-card__label {
+  font-size: .8125rem;
+  font-weight: 600;
+  margin-bottom: .75rem;
+}
+
+.dim-card__label--strong { color: var(--c-dim1); }
+.dim-card__label--medium { color: var(--c-dim2); }
+.dim-card__label--weak   { color: #f87171; }
+
+.dim-card__notes {
+  font-size: .8125rem;
+  color: var(--ink-muted);
+  line-height: 1.65;
+  display: flex;
+  flex-direction: column;
+  gap: .375rem;
+}
+
+.dim-card__note::before {
+  content: '· ';
+  font-weight: 700;
+}
+
+/* ========================================
+   Report Sections
+   ======================================== */
+.section {
+  margin-bottom: 2.5rem;
+}
+
+.section__header {
+  display: flex;
+  align-items: center;
+  gap: .875rem;
+  margin-bottom: 1.25rem;
+}
+
+.section__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-md);
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.section--highlight .section__badge { background: var(--c-highlight); }
+.section--optimize .section__badge { background: var(--c-optimize); }
+.section--recommend .section__badge { background: var(--c-recommend); }
+
+.section__title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  color: var(--ink);
+}
+
+.section__title-sub {
+  font-size: .8125rem;
+  font-weight: 500;
+  color: var(--ink-faint);
+  margin-left: .5rem;
+}
+
+/* — Highlight cards — */
+.highlight-list { display: grid; gap: .875rem; }
+
+.highlight-card {
+  display: flex;
+  gap: .875rem;
+  padding: 1.125rem 1.375rem;
+  background: var(--c-highlight-bg);
+  border: 1px solid var(--c-highlight-bd);
+  border-radius: var(--r-md);
+  transition: all var(--t-fast);
+}
+
+.highlight-card:hover {
+  box-shadow: var(--shadow-card);
+  transform: translateY(-1px);
+  border-color: rgba(52,211,153,0.4);
+}
+
+.highlight-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--c-highlight);
+  color: #042218;
+  font-size: .8125rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.highlight-card__label {
+  font-size: .8125rem;
+  font-weight: 600;
+  color: var(--c-highlight);
+  margin-bottom: 3px;
+}
+
+.highlight-card__quote {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--ink-bright);
+  margin-bottom: .5rem;
+  line-height: 1.55;
+}
+
+.highlight-card__note {
+  font-size: .875rem;
+  color: var(--ink-muted);
+  line-height: 1.6;
+}
+
+/* — Optimize cards — */
+.optimize-list { display: grid; gap: .625rem; }
+
+.optimize-card {
+  display: flex;
+  gap: .875rem;
+  padding: .875rem 1.125rem;
+  background: var(--c-optimize-bg);
+  border: 1px solid var(--c-optimize-bd);
+  border-radius: var(--r-md);
+  border-left: 3px solid var(--c-optimize);
+  transition: all var(--t-fast);
+}
+
+.optimize-card:hover {
+  box-shadow: var(--shadow-sm);
+  border-color: rgba(251,146,60,0.4);
+}
+
+.optimize-card__num {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--c-optimize);
+  opacity: .5;
+  line-height: 1;
+  flex-shrink: 0;
+  width: 28px;
+}
+
+.optimize-card__quote {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--ink-bright);
+  margin-bottom: .375rem;
+  line-height: 1.55;
+}
+
+.optimize-card__note {
+  font-size: .8125rem;
+  color: var(--c-optimize);
+  line-height: 1.55;
+  font-weight: 500;
+}
+
+.optimize-card__note::before { content: '⚠ '; }
+
+/* — Recommend cards — */
+.recommend-list { display: grid; gap: .875rem; }
+
+.recommend-card {
+  background: var(--bg-card);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--t-fast);
+}
+
+.recommend-card:hover {
+  box-shadow: var(--shadow-card);
+  border-color: var(--rule-strong);
+}
+
+.recommend-card__inner {
+  display: grid;
+  grid-template-columns: 1fr 36px 1fr;
+  align-items: stretch;
+}
+
+.recommend-card__before,
+.recommend-card__after {
+  padding: 1rem 1.25rem;
+}
+
+.recommend-card__after { background: var(--c-recommend-bg); }
+
+.recommend-card__label {
+  font-size: .6875rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: .5rem;
+}
+
+.recommend-card__before .recommend-card__label { color: var(--c-optimize); }
+.recommend-card__after .recommend-card__label { color: var(--c-recommend); }
+
+.recommend-card__text {
+  font-size: .9375rem;
+  line-height: 1.6;
+  color: var(--ink-bright);
+}
+
+.recommend-card__before .recommend-card__text {
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--ink-muted);
+}
+
+.recommend-card__after .recommend-card__text {
+  font-weight: 500;
+}
+
+.recommend-card__after .recommend-card__text strong {
+  color: var(--c-recommend);
+  font-weight: 600;
+}
+
+.recommend-card__arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card);
+  border-left: 1px dashed var(--rule);
+  border-right: 1px dashed var(--rule);
+}
+
+.recommend-card__arrow svg {
+  width: 18px;
+  height: 18px;
+  color: var(--c-recommend);
+}
+
+/* — Report footer — */
+.report-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--rule);
+  font-size: .8125rem;
+  color: var(--ink-faint);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.report-footer strong { color: var(--ink-muted); font-weight: 600; }
+
+/* ========================================
+   Responsive
+   ======================================== */
+@media (max-width: 768px) {
+  .dim-grid { grid-template-columns: 1fr; }
+  .report-page { padding: 1.25rem; }
+  .selector-row { flex-direction: column; }
+  .btn-view { width: 100%; }
+  .recommend-card__inner { grid-template-columns: 1fr; }
+  .recommend-card__before { border-bottom: 1px dashed var(--rule); }
+  .recommend-card__arrow { display: none; }
+  .task-nav { gap: .375rem; }
+  .task-nav__item { min-width: 70px; padding: .5rem .5rem; }
+}
+
+@media (min-width: 1600px) {
+  html { font-size: 20px; }
+  .report-page { max-width: 1200px; padding: 2.5rem 3rem 4rem; }
+  .report-topbar { padding: 1.25rem 3rem; }
+}
+
+@media (min-width: 2000px) {
+  html { font-size: 22px; }
+  .report-page { max-width: 1400px; padding: 3rem 3.5rem 5rem; }
+  .report-topbar { padding: 1.5rem 3.5rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================ -->
+<!-- PAGE 1: Dashboard                                -->
+<!-- ============================================ -->
+<div class="page page--active" id="pageDashboard">
+
+  <div class="dashboard">
+
+    <!-- 6 Tasks Navigation -->
+    <div class="task-nav">
+      <div class="task-nav__item">
+        <span class="task-nav__num">1</span>
+        <span class="task-nav__name">体检接待</span>
+        <span class="task-nav__en">Welcoming Foreign Clients</span>
+      </div>
+      <div class="task-nav__item">
+        <span class="task-nav__num">2</span>
+        <span class="task-nav__name">信息问询</span>
+        <span class="task-nav__en">Taking Health History</span>
+      </div>
+      <div class="task-nav__item task-nav__item--active">
+        <span class="task-nav__num">3</span>
+        <span class="task-nav__name">报告转述</span>
+        <span class="task-nav__en">Explaining Lab Reports</span>
+        <span class="task-nav__badge">本次课</span>
+      </div>
+      <div class="task-nav__item">
+        <span class="task-nav__num">4</span>
+        <span class="task-nav__name">膳食指导</span>
+        <span class="task-nav__en">Guiding Daily Diets</span>
+      </div>
+      <div class="task-nav__item">
+        <span class="task-nav__num">5</span>
+        <span class="task-nav__name">运动建议</span>
+        <span class="task-nav__en">Giving Exercise Suggestions</span>
+      </div>
+      <div class="task-nav__item">
+        <span class="task-nav__num">6</span>
+        <span class="task-nav__name">健康维持</span>
+        <span class="task-nav__en">Maintaining Personal Health</span>
+      </div>
+    </div>
+
+    <h1 class="dashboard__title">
+      角色扮演<em>质检工作台</em>
+    </h1>
+
+    <p class="dashboard__subtitle">涉外体检角色扮演对话 AI 质检系统</p>
+
+    <!-- 阶段一：任务已发布（打开即见） -->
+    <div class="stage-ready" id="stageReady">
+      <button class="btn-published" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M8.5 12.5l2.5 2.5 5-6"/>
+        </svg>
+        <span>已发布<span class="btn-published__en">Published</span></span>
+      </button>
+      <p class="stage-ready__hint">任务已发布，各组角色扮演对话已完成质检。<br>点击下方按钮，选择小组查看 AI 质检报告。</p>
+      <button class="btn-start" onclick="startSession()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+        选择小组查看报告
+      </button>
+    </div>
+
+    <!-- 阶段二：小组选择页 -->
+    <div class="select-stage" id="stageSelect" style="display:none">
+      <div class="select-stage__bar">
+        <button class="btn-reset" onclick="backToReady()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          返回
+        </button>
+        <span class="select-stage__title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          选择小组查看质检报告
+        </span>
+      </div>
+
+      <div class="group-grid" id="groupGrid"></div>
+
+      <div class="select-stage__footer">
+        <button class="btn-view" id="btnViewReport" disabled onclick="openReport()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          查看报告
+        </button>
+        <span class="select-stage__hint" id="selectHint">请先选择一个小组</span>
+      </div>
+    </div>
+
+    <div class="dashboard__hints">
+      <span class="dashboard__hint">
+        <kbd>↑↓</kbd> 切换小组
+      </span>
+      <span class="dashboard__hint">
+        <kbd>Enter</kbd> 查看报告
+      </span>
+      <span class="dashboard__hint">
+        <kbd>Esc</kbd> 返回工作台
+      </span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================ -->
+<!-- PAGE 2: Report View                               -->
+<!-- ============================================ -->
+<div class="page page--report" id="pageReport" style="display:none">
+
+  <div class="report-topbar">
+    <button class="btn-back" onclick="backToDashboard()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      返回工作台
+    </button>
+    <div style="text-align:right">
+      <div class="report-topbar__group" id="reportGroupLabel">Group 1</div>
+      <div class="report-topbar__scenario" id="reportScenarioLabel">AI 质检报告</div>
+    </div>
+  </div>
+
+  <div class="report-page" id="reportContent">
+    <!-- Dynamically filled by JavaScript -->
+  </div>
+
+</div>
+
+
+<script>
+// ========================================
+// Group Report Data
+// ========================================
+const groupReports = {
+
+  1: {
+    scenario: '体检报告指标转述解读',
+    dimensions: [
+      {
+        num: 1,
+        cssClass: 'dim1',
+        name: '专业英语表达准确度',
+        description: '使用柔和区间描述词、专业术语发音清晰、信息讲解逻辑',
+        filled: 1,
+        labelText: '需重点提升',
+        labelClass: 'weak',
+        notes: [
+          '多处直接使用"high""abnormal"等直白生硬词汇',
+          '缺少"略微偏高""略高于正常范围"等柔和表述',
+          '连续抛出负面信息，缺少分析解读逻辑'
+        ]
+      },
+      {
+        num: 2,
+        cssClass: 'dim2',
+        name: '人文沟通服务素养',
+        description: '主动共情安抚客户情绪、问诊询问生活作息、沟通礼貌温和',
+        filled: 2,
+        labelText: '有亮点待优化',
+        labelClass: 'medium',
+        notes: [
+          '使用"I totally get that you feel anxious"主动共情1次',
+          '存在"You must""You have to"等命令式表述',
+          '未主动询问客户日常饮食、运动等生活作息'
+        ]
+      },
+      {
+        num: 3,
+        cssClass: 'dim3',
+        name: '中华康养文化跨文化传播',
+        description: '自然主动介绍中式养生方式、文化内容植入流畅不生硬',
+        filled: 1,
+        labelText: '需重点提升',
+        labelClass: 'weak',
+        notes: [
+          '主动提及太极"Tai Chi"，但介绍仅有1句，过于笼统',
+          '未说明太极的具体健康益处与适老特点',
+          '跨文化传播意识有但深度不足流于表面'
+        ]
+      }
+    ],
+    highlights: [
+      {
+        label: '人文沟通 · 主动共情',
+        quote: '"I totally get that you feel anxious."',
+        note: '在客户表达担忧后，主动识别并回应了对方情绪，体现了人文关怀意识。'
+      },
+      {
+        label: '跨文化传播 · 引入太极',
+        quote: '"You can try Tai Chi."',
+        note: '主动向外籍客户推荐太极这一中华传统养生运动，体现了跨文化传播意识，方向正确。'
+      },
+      {
+        label: '信息结构 · 循序渐进',
+        note: '对话整体遵循"查看报告→发现问题→提出建议→推荐运动"的信息递进逻辑，条理基本清晰。'
+      }
+    ],
+    optimizations: [
+      {
+        quote: '"First, your blood pressure is high."',
+        note: '直接使用"high"描述指标，语气生硬；告知异常前缺少情绪安抚过渡。'
+      },
+      {
+        quote: '"You have to control your salt intake. Next, your LDL cholesterol is also abnormal. And your BMI is above normal range."',
+        note: '"You have to"语气命令式；"abnormal"表述生硬；连续叠加负面信息，缺乏过渡安抚。'
+      },
+      {
+        quote: '"All these problems come from an unhealthy lifestyle. You need to lose weight strictly."',
+        note: '将问题归因于客户生活方式，带指责意味；"strictly"语气过于严厉。'
+      },
+      {
+        quote: '"It\'s good for health. You can have a try."',
+        note: '对太极的介绍过于笼统，未说明具体益处，跨文化传播流于表面。'
+      }
+    ],
+    recommendations: [
+      {
+        before: '"First, your blood pressure is high."',
+        after: '"Mr. Brown, please don\'t worry — most of your results look quite good. Your blood pressure is <strong>slightly above the normal range</strong>, which is very common at your age."'
+      },
+      {
+        before: '"You have to control your salt intake. Next, your LDL cholesterol is also abnormal. And your BMI is above normal range."',
+        after: '"It would be helpful to <strong>gradually reduce</strong> salty foods. I\'d also like to mention that your LDL cholesterol is <strong>slightly above the recommended range</strong>, and your BMI is a bit higher than ideal — but these are all <strong>manageable</strong> with some simple lifestyle adjustments."'
+      },
+      {
+        before: '"All these problems come from an unhealthy lifestyle. You need to lose weight strictly."',
+        after: '"These indicators are quite common and are often related to daily habits. With some <strong>gradual, sustainable changes</strong>, we can <strong>work together</strong> to bring them into a healthier range."'
+      },
+      {
+        before: '"It\'s good for health. You can have a try."',
+        after: '"Tai Chi is a <strong>traditional Chinese mind-body exercise</strong>. It involves slow, gentle movements and deep breathing, which can help <strong>improve balance, lower stress, and support heart health</strong> — especially suitable for seniors."'
+      }
+    ]
+  },
+
+  2: {
+    scenario: '血脂指标解读',
+    dimensions: [
+      {
+        num: 1, cssClass: 'dim1', name: '专业英语表达准确度',
+        description: '使用柔和区间描述词、专业术语发音清晰、信息讲解逻辑',
+        filled: 3, labelText: '表现优秀', labelClass: 'strong',
+        notes: [
+          '使用"slightly elevated""a little above the normal range"等柔和用词',
+          '专业术语使用基本准确，讲解逻辑顺畅',
+          '建议部分可更具体，给予可操作示例'
+        ]
+      },
+      {
+        num: 2, cssClass: 'dim2', name: '人文沟通服务素养',
+        description: '主动共情安抚客户情绪、问诊询问生活作息、沟通礼貌温和',
+        filled: 2, labelText: '有亮点待优化', labelClass: 'medium',
+        notes: [
+          '使用"I understand""Don\'t worry"等共情表达',
+          '沟通语气温和礼貌，无明显命令式表述',
+          '未主动询问客户饮食运动等生活习惯细节'
+        ]
+      },
+      {
+        num: 3, cssClass: 'dim3', name: '中华康养文化跨文化传播',
+        description: '自然主动介绍中式养生方式、文化内容植入流畅不生硬',
+        filled: 2, labelText: '有亮点待优化', labelClass: 'medium',
+        notes: [
+          '主动引入八段锦（Baduanjin），文化过渡自然',
+          '对八段锦作了基本功能说明',
+          '可补充八段锦历史悠久、坐姿可练等适老特点'
+        ]
+      }
+    ],
+    highlights: [
+      {
+        label: '专业表达 · 柔和区间用词',
+        quote: '"Your blood sugar is slightly elevated… just a little above the normal range."',
+        note: '多次使用"slightly elevated""a little above"等柔和描述词，完全避免了"high""abnormal"等生硬表述。'
+      },
+      {
+        label: '人文沟通 · 主动共情',
+        quote: '"I understand. Let\'s go through them together. Don\'t worry."',
+        note: '在告知指标前主动安抚，"I understand"和"Don\'t worry"搭配使用，节奏得当。'
+      },
+      {
+        label: '跨文化传播 · 引入八段锦',
+        quote: '"Have you heard of Baduanjin? It\'s a traditional Chinese breathing exercise."',
+        note: '以设问方式自然引入中华养生方式，并做了基本说明，引导自然不生硬。'
+      }
+    ],
+    optimizations: [
+      {
+        quote: '"We can manage it with some dietary changes."',
+        note: '"dietary changes"较笼统，未给出具体方向，老年客户可能不知从何入手。'
+      },
+      {
+        quote: '"Try to reduce sugary snacks and eat more vegetables."',
+        note: '建议较泛化，缺少可操作的具体示例，指导性不足。'
+      },
+      {
+        quote: '"It\'s excellent for circulation and metabolism, and very popular among seniors in China."',
+        note: '有基本框架，但未说明适老特点（如可坐姿练习、无需器械），文化深度可提升。'
+      }
+    ],
+    recommendations: [
+      {
+        before: '"We can manage it with some dietary changes."',
+        after: '"We can <strong>work together</strong> on some simple adjustments to your daily meals — nothing drastic, just <strong>small steps</strong>."'
+      },
+      {
+        before: '"Try to reduce sugary snacks and eat more vegetables."',
+        after: '"Perhaps you could try <strong>swapping sugary snacks for fresh fruit</strong>, and adding more <strong>leafy greens like spinach or broccoli</strong> to your meals."'
+      },
+      {
+        before: '"It\'s excellent for circulation and metabolism, and very popular among seniors in China."',
+        after: '"Baduanjin is a gentle mind-body practice from China, <strong>dating back over 800 years</strong>. The slow, flowing movements help improve circulation and bring calm — <strong>it can even be done seated</strong>, making it especially suitable."'
+      }
+    ]
+  },
+
+  3: {
+    scenario: '血糖指标解读',
+    dimensions: [
+      {
+        num: 1, cssClass: 'dim1', name: '专业英语表达准确度',
+        description: '使用柔和区间描述词、专业术语发音清晰、信息讲解逻辑',
+        filled: 2, labelText: '有亮点待优化', labelClass: 'medium',
+        notes: [
+          '使用了"slightly above normal"等柔和表述，但仍有1处直接使用"abnormal"',
+          '专业术语使用基本准确',
+          '信息递进逻辑可更清晰，避免指标堆砌'
+        ]
+      },
+      {
+        num: 2, cssClass: 'dim2', name: '人文沟通服务素养',
+        description: '主动共情安抚客户情绪、问诊询问生活作息、沟通礼貌温和',
+        filled: 3, labelText: '表现优秀', labelClass: 'strong',
+        notes: [
+          '全程保持温和语气，主动共情安抚2次以上',
+          '主动询问客户日常饮食偏好与运动习惯',
+          '不使用命令式语言，以建议替代指令'
+        ]
+      },
+      {
+        num: 3, cssClass: 'dim3', name: '中华康养文化跨文化传播',
+        description: '自然主动介绍中式养生方式、文化内容植入流畅不生硬',
+        filled: 1, labelText: '需重点提升', labelClass: 'weak',
+        notes: [
+          '全程未提及任何中华养生方式或中式康养理念',
+          '缺少跨文化传播意识',
+          '可在运动建议环节自然引入太极、八段锦等'
+        ]
+      }
+    ],
+    highlights: [
+      {
+        label: '人文沟通 · 全程温和',
+        note: '对话全程语气温和有礼，主动共情表达自然，体现了良好的服务沟通素养。'
+      },
+      {
+        label: '专业表达 · 部分柔和用词',
+        quote: '"Your glucose is slightly above the normal range."',
+        note: '使用了"slightly above the normal range"这一柔和区间表述，方向正确。'
+      },
+      {
+        label: '主动问诊 · 了解生活习惯',
+        note: '主动询问客户日常饮食偏好与运动习惯，为后续建议提供了个性化基础。'
+      }
+    ],
+    optimizations: [
+      {
+        quote: '"Your liver function indicator is abnormal."',
+        note: '使用了"abnormal"这一直白表述，应立即替换为柔和区间描述词。'
+      },
+      {
+        quote: '"You should eat less sugar and exercise more."',
+        note: '"should"虽比"must"温和，但建议仍较笼统，缺少具体可操作的指导。'
+      },
+      {
+        note: '全程未涉及中华养生文化内容，建议在运动推荐环节自然融入太极或八段锦等推荐。'
+      }
+    ],
+    recommendations: [
+      {
+        before: '"Your liver function indicator is abnormal."',
+        after: '"Your liver function indicator is <strong>slightly outside the recommended range</strong>, which is quite common and <strong>nothing to be alarmed about</strong>."'
+      },
+      {
+        before: '"You should eat less sugar and exercise more."',
+        after: '"Would you be open to trying <strong>swapping white rice for brown rice</strong>, and perhaps a <strong>20-minute walk after dinner</strong>? Small changes like these often make a big difference."'
+      },
+      {
+        note: '可在运动建议环节加入："By the way, have you ever tried <strong>Tai Chi or Baduanjin</strong>? These traditional Chinese exercises are gentle on the joints and many seniors enjoy them for stress relief and balance."'
+      }
+    ]
+  },
+
+  4: {
+    scenario: 'BMI与体重管理',
+    dimensions: [
+      {
+        num: 1, cssClass: 'dim1', name: '专业英语表达准确度',
+        description: '使用柔和区间描述词、专业术语发音清晰、信息讲解逻辑',
+        filled: 2, labelText: '有亮点待优化', labelClass: 'medium',
+        notes: [
+          '使用了"slightly above the ideal range"等柔和表述',
+          '但后续出现"You must strictly control"等命令式表达',
+          '数据解读环节逻辑基本清晰'
+        ]
+      },
+      {
+        num: 2, cssClass: 'dim2', name: '人文沟通服务素养',
+        description: '主动共情安抚客户情绪、问诊询问生活作息、沟通礼貌温和',
+        filled: 1, labelText: '需重点提升', labelClass: 'weak',
+        notes: [
+          '缺乏对客户情绪的主动识别与安抚',
+          '多次使用"You must""You need to strictly"等严厉指令',
+          '体重大小属于敏感话题但未做任何心理铺垫'
+        ]
+      },
+      {
+        num: 3, cssClass: 'dim3', name: '中华康养文化跨文化传播',
+        description: '自然主动介绍中式养生方式、文化内容植入流畅不生硬',
+        filled: 3, labelText: '表现优秀', labelClass: 'strong',
+        notes: [
+          '主动介绍太极且有较详细的益处说明',
+          '"slow, gentle, suitable for all ages"等表述贴合老年客户',
+          '文化过渡自然，将太极融入运动建议场景'
+        ]
+      }
+    ],
+    highlights: [
+      {
+        label: '跨文化传播 · 太极详细推荐',
+        quote: '"Tai Chi is a gentle Chinese exercise with slow movements, suitable for all ages, especially for joint health and balance."',
+        note: '主动且用语丰富的跨文化传播实例，结合客户年龄特点推荐，自然到位。'
+      },
+      {
+        label: '专业表达 · 部分柔和用词',
+        quote: '"Your BMI is slightly above the ideal range for your age."',
+        note: '使用"slightly above the ideal range"这一柔和描述，开头衔接正确。'
+      }
+    ],
+    optimizations: [
+      {
+        quote: '"You must strictly control your calorie intake every day."',
+        note: '"must strictly"语气严厉，缺少共情安抚，体重话题本身敏感需额外注意措辞。'
+      },
+      {
+        quote: '"This is a serious problem. You need to act immediately."',
+        note: '"serious problem""act immediately"制造不必要的紧迫感和恐惧，老年人尤应避免。'
+      },
+      {
+        note: '全程未主动询问客户情绪状态或日常饮食习惯，缺少人文关怀前置。'
+      }
+    ],
+    recommendations: [
+      {
+        before: '"You must strictly control your calorie intake every day."',
+        after: '"Many of us find weight management challenging — would you be comfortable if we <strong>look at a few gentle adjustments</strong> to your daily meals? Even <strong>small swaps</strong> can make a meaningful difference over time."'
+      },
+      {
+        before: '"This is a serious problem. You need to act immediately."',
+        after: '"These numbers give us useful information to work with. There\'s no rush — let\'s <strong>start with one or two simple changes</strong> and build from there at your own pace."'
+      }
+    ]
+  },
+
+  5: {
+    scenario: '综合体检报告解读',
+    dimensions: [
+      {
+        num: 1, cssClass: 'dim1', name: '专业英语表达准确度',
+        description: '使用柔和区间描述词、专业术语发音清晰、信息讲解逻辑',
+        filled: 2, labelText: '有亮点待优化', labelClass: 'medium',
+        notes: [
+          '多处使用柔和表述但偶有生硬词汇混入',
+          '指标解读逻辑较清晰，能区分主次',
+          '可进一步规范"above ideal range"等标准表述'
+        ]
+      },
+      {
+        num: 2, cssClass: 'dim2', name: '人文沟通服务素养',
+        description: '主动共情安抚客户情绪、问诊询问生活作息、沟通礼貌温和',
+        filled: 2, labelText: '有亮点待优化', labelClass: 'medium',
+        notes: [
+          '整体语气温和，有1次主动共情表达',
+          '存在1处命令式表述',
+          '问诊环节较简短，可深入询问作息细节'
+        ]
+      },
+      {
+        num: 3, cssClass: 'dim3', name: '中华康养文化跨文化传播',
+        description: '自然主动介绍中式养生方式、文化内容植入流畅不生硬',
+        filled: 2, labelText: '有亮点待优化', labelClass: 'medium',
+        notes: [
+          '提及了中式茶文化与健康关联',
+          '文化植入方式自然但介绍深度不足',
+          '可结合中医"治未病"理念进一步丰富'
+        ]
+      }
+    ],
+    highlights: [
+      {
+        label: '综合信息组织能力',
+        note: '多项指标综合解读时能区分主次，先讲重点、再讲次要，信息架构清晰。'
+      },
+      {
+        label: '跨文化传播 · 茶文化引入',
+        quote: '"In China, many elderly people enjoy green tea daily — it\'s believed to support metabolism."',
+        note: '以生活化方式引入中华茶文化，场景自然，不显突兀。'
+      },
+      {
+        label: '专业表达 · 整体用词较规范',
+        note: '整体上使用了较多的柔和区间表述（slightly above, a bit higher than），方向正确。'
+      }
+    ],
+    optimizations: [
+      {
+        quote: '"You need to cut down on red meat and fried food."',
+        note: '"You need to"带有指令感，可改为建议式表达。'
+      },
+      {
+        note: '茶文化介绍仅1句话，可结合"治未病"理念丰富跨文化传播内容。'
+      }
+    ],
+    recommendations: [
+      {
+        before: '"You need to cut down on red meat and fried food."',
+        after: '"Many of our clients find it helpful to <strong>replace red meat with fish twice a week</strong>, and to <strong>try steaming instead of frying</strong>. What do you think about starting there?"'
+      },
+      {
+        note: '茶文化环节可扩展："In traditional Chinese wellness philosophy, we believe in <strong>nourishing the body before illness arises</strong>. Something as simple as a daily cup of green tea is one way people practice this — it\'s gentle, enjoyable, and widely loved."'
+      }
+    ]
+  }
+};
+
+// ========================================
+// State
+// ========================================
+const TOTAL_GROUPS = 5;
+let sessionStarted = false;
+let selectedGroup = null;
+
+// ========================================
+// 进入小组选择页 / 返回就绪页
+// ========================================
+function startSession() {
+  sessionStarted = true;
+  document.getElementById('stageReady').style.display = 'none';
+  document.getElementById('stageSelect').style.display = 'block';
+  renderGroupGrid();
+  selectGroup(1);
+}
+
+function backToReady() {
+  sessionStarted = false;
+  selectedGroup = null;
+  document.getElementById('stageSelect').style.display = 'none';
+  document.getElementById('stageReady').style.display = 'flex';
+  document.getElementById('btnViewReport').disabled = true;
+  document.getElementById('selectHint').textContent = '请先选择一个小组';
+}
+
+// ========================================
+// 小组卡片
+// ========================================
+function renderGroupGrid() {
+  const grid = document.getElementById('groupGrid');
+  let html = '';
+  for (let i = 1; i <= TOTAL_GROUPS; i++) {
+    const sel = selectedGroup === i;
+    html += `
+      <div class="group-card${sel ? ' group-card--selected' : ''}" onclick="selectGroup(${i})">
+        <div class="group-card__name">Group ${i}</div>
+        <span class="group-card__status"><span class="group-card__status-dot"></span>${sel ? '已选' : '选择'}</span>
+        <span class="group-card__hint">${sel ? '已选中该组' : '点击选中'}</span>
+      </div>`;
+  }
+  grid.innerHTML = html;
+}
+
+function selectGroup(n) {
+  selectedGroup = n;
+  renderGroupGrid();
+  document.getElementById('btnViewReport').disabled = false;
+  document.getElementById('selectHint').innerHTML = '已选择 <strong>Group ' + n + '</strong>，点击「查看报告」打开该组质检结果';
+}
+
+// ========================================
+// 轻提示 Toast
+// ========================================
+function showWorkToast(msg) {
+  let t = document.getElementById('workToast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'workToast';
+    t.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(8,28,50,.96);border:1px solid rgba(52,211,153,.45);color:#e0ecf8;padding:12px 26px;border-radius:12px;font-size:.9375rem;font-weight:600;z-index:999;box-shadow:0 8px 32px rgba(0,0,0,.45);transition:opacity .3s;opacity:1;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.style.opacity = '0'; }, 1800);
+}
+
+// ========================================
+// View Switching
+// ========================================
+function openReport() {
+  if (!selectedGroup) {
+    showWorkToast('请先选择一个小组');
+    return;
+  }
+
+  renderReport(selectedGroup);
+
+  const dashPage = document.getElementById('pageDashboard');
+  const reportPage = document.getElementById('pageReport');
+
+  dashPage.classList.remove('page--active');
+  dashPage.style.display = 'none';
+
+  reportPage.style.display = 'flex';
+  requestAnimationFrame(() => {
+    reportPage.classList.add('page--active');
+    window.scrollTo(0, 0);
+  });
+}
+
+function backToDashboard() {
+  const dashPage = document.getElementById('pageDashboard');
+  const reportPage = document.getElementById('pageReport');
+
+  reportPage.classList.remove('page--active');
+
+  setTimeout(() => {
+    reportPage.style.display = 'none';
+    dashPage.style.display = 'flex';
+    requestAnimationFrame(() => {
+      dashPage.classList.add('page--active');
+    });
+  }, 350);
+}
+
+// ========================================
+// Render Report
+// ========================================
+function renderReport(n) {
+  const data = groupReports[n];
+
+  // Update top bar
+  document.getElementById('reportGroupLabel').textContent = 'Group ' + n;
+  document.getElementById('reportScenarioLabel').textContent = '场景：' + data.scenario;
+
+  // Build dimension cards
+  let dimsHTML = '<div class="dim-grid">';
+  data.dimensions.forEach(dim => {
+    let dotsHTML = '';
+    for (let i = 0; i < 3; i++) {
+      dotsHTML += `<span class="dim-meter__dot${i < dim.filled ? ' dim-meter__dot--filled' : ''}"></span>`;
+    }
+    let notesHTML = dim.notes.map(n => `<span class="dim-card__note">${n}</span>`).join('');
+
+    dimsHTML += `
+      <div class="dim-card dim-card--${dim.cssClass}">
+        <div class="dim-card__num">0${dim.num}</div>
+        <div class="dim-card__name">${dim.name}<br>${dim.description}</div>
+        <div class="dim-meter">${dotsHTML}</div>
+        <div class="dim-card__label dim-card__label--${dim.labelClass}">${dim.labelText}</div>
+        <div class="dim-card__notes">${notesHTML}</div>
+      </div>`;
+  });
+  dimsHTML += '</div>';
+
+  // Build highlights
+  let highlightsHTML = '';
+  data.highlights.forEach((h, i) => {
+    highlightsHTML += `
+      <div class="highlight-card">
+        <div class="highlight-card__icon">${i + 1}</div>
+        <div>
+          <div class="highlight-card__label">${h.label}</div>
+          ${h.quote ? `<p class="highlight-card__quote">${h.quote}</p>` : ''}
+          <p class="highlight-card__note">${h.note}</p>
+        </div>
+      </div>`;
+  });
+
+  // Build optimizations
+  let optsHTML = '';
+  data.optimizations.forEach((o, i) => {
+    optsHTML += `
+      <div class="optimize-card">
+        <div class="optimize-card__num">${String(i + 1).padStart(2, '0')}</div>
+        <div>
+          ${o.quote ? `<p class="optimize-card__quote">${o.quote}</p>` : ''}
+          <p class="optimize-card__note">${o.note}</p>
+        </div>
+      </div>`;
+  });
+
+  // Build recommendations
+  let recsHTML = '';
+  data.recommendations.forEach((r, i) => {
+    if (r.before) {
+      recsHTML += `
+        <div class="recommend-card">
+          <div class="recommend-card__inner">
+            <div class="recommend-card__before">
+              <div class="recommend-card__label">● 待优化原句</div>
+              <p class="recommend-card__text">${r.before}</p>
+            </div>
+            <div class="recommend-card__arrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </div>
+            <div class="recommend-card__after">
+              <div class="recommend-card__label">◆ 优化参考</div>
+              <p class="recommend-card__text">${r.after}</p>
+            </div>
+          </div>
+        </div>`;
+    } else {
+      recsHTML += `
+        <div class="recommend-card" style="padding: 1rem 1.25rem; border-left: 3px solid var(--c-recommend);">
+          <div class="recommend-card__label" style="color:var(--c-recommend)">◆ 优化参考</div>
+          <p class="recommend-card__text">${r.note}</p>
+        </div>`;
+    }
+  });
+
+  // Assemble
+  document.getElementById('reportContent').innerHTML = `
+    <div class="report-title">
+      <div class="report-title__eyebrow">AI 质检参考报告 · Classroom QA Reference</div>
+      <h1 class="report-title__heading">Group ${n} · ${data.scenario}</h1>
+    </div>
+
+    ${dimsHTML}
+
+    <section class="section section--highlight">
+      <div class="section__header">
+        <div class="section__badge">一</div>
+        <h2 class="section__title">Performance Highlights<span class="section__title-sub">表演亮点</span></h2>
+      </div>
+      <div class="highlight-list">${highlightsHTML}</div>
+    </section>
+
+    <section class="section section--optimize">
+      <div class="section__header">
+        <div class="section__badge">二</div>
+        <h2 class="section__title">Sentences to be Optimized<span class="section__title-sub">待优化原句</span></h2>
+      </div>
+      <div class="optimize-list">${optsHTML}</div>
+    </section>
+
+    <section class="section section--recommend">
+      <div class="section__header">
+        <div class="section__badge">三</div>
+        <h2 class="section__title">Recommended Expressions<span class="section__title-sub">岗位优化参考句式</span></h2>
+      </div>
+      <div class="recommend-list">${recsHTML}</div>
+    </section>
+
+    <div class="report-footer">
+      <span><strong>说明：</strong>本报告为AI 辅助生成，仅作为课堂辅助参考，不设分数或等级评判。</span>
+      <span style="color:var(--ink-faint)">AI 辅助生成 · 仅供教学使用</span>
+    </div>
+  `;
+
+  // Scroll to top
+  window.scrollTo(0, 0);
+}
+
+// ========================================
+// Keyboard Shortcuts
+// ========================================
+document.addEventListener('keydown', function(e) {
+  const onDashboard = document.getElementById('pageDashboard').classList.contains('page--active');
+
+  if (onDashboard) {
+    if (e.key === 'Enter') {
+      if (!sessionStarted) { startSession(); return; }
+      if (selectedGroup) { openReport(); return; }
+      return;
+    }
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      const dir = e.key === 'ArrowDown' ? 1 : -1;
+      let next = selectedGroup ? selectedGroup + dir : 1;
+      if (next < 1) next = TOTAL_GROUPS;
+      if (next > TOTAL_GROUPS) next = 1;
+      selectGroup(next);
+      return;
+    }
+  } else {
+    if (e.key === 'Escape') {
+      backToDashboard();
+      return;
+    }
+  }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "高职英语（三）涉外体检职场英语 — 课程工作台",
+  "short_name": "涉外体检英语",
+  "description": "POA 产出导向高职英语课程工作台，含任务发布、AI 评价、学情数据与课堂互动工具。",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#3182ce",
+  "icons": [
+    { "src": "icons/app-icon-120.png", "sizes": "120x120", "type": "image/png" },
+    { "src": "icons/app-icon-152.png", "sizes": "152x152", "type": "image/png" },
+    { "src": "icons/app-icon-167.png", "sizes": "167x167", "type": "image/png" },
+    { "src": "icons/app-icon-180.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}

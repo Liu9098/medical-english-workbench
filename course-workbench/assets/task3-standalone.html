@@ -425,7 +425,7 @@ html, body {
 
   /* 图2 雷达图 */
   function buildRadar() {
-    const W = 640, H = 470, cx = 320, cy = 240, R = 158, N = sorted.length;
+    const W = 880, H = 540, cx = 440, cy = 270, R = 168, N = sorted.length;
     const pt = (i, r) => {
       const a = -Math.PI / 2 + i * 2 * Math.PI / N;
       return [cx + r * Math.cos(a), cy + r * Math.sin(a), a];
@@ -452,7 +452,7 @@ html, body {
     });
     const area = `<g class="radar-data"><polygon points="${poly}" fill="rgba(74,127,214,0.22)" stroke="#4A7FD6" stroke-width="2.5" stroke-linejoin="round"/>${dots}</g>`;
     const labels = sorted.map((x, i) => {
-      const [lx, ly, a] = pt(i, R + 28);
+      const [lx, ly, a] = pt(i, R + 42);
       const cos = Math.cos(a), sin = Math.sin(a);
       let anchor = 'middle';
       if (cos > 0.35) anchor = 'start';

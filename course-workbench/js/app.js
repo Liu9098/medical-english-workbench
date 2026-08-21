@@ -468,13 +468,15 @@ function renderTaskDashboard(taskId) {
     // Task 3 报告转述：嵌入本地看板
     showModal(`📊 Task 3 ${task.name} · 报告解读看板`, `
       <div class="iframe-modal-wrap">
-        <iframe class="iframe-modal-frame" src="${DASHBOARD_URL}" allow="microphone; camera" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        <iframe class="iframe-modal-frame" src="${DASHBOARD_URL}" allow="microphone; camera; fullscreen" referrerpolicy="no-referrer-when-downgrade"></iframe>
       </div>
       <div class="text-sm text-tertiary mt-8">
         看板地址：${DASHBOARD_URL}
       </div>
     `);
     document.querySelector('#modal-overlay .modal')?.classList.add('modal--wide');
+    // 右上角添加全屏按钮（教师大屏展示学生评分数据）
+    addTask3FullscreenButton();
   } else {
     // 其余任务：占位提示，后续接入数据
     showModal(`${task.icon} Task ${task.id} ${task.name} · 任务学情`, `

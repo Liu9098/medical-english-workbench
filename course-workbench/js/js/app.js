@@ -1117,6 +1117,17 @@ let sentenceGameList = [];
 
 function startSentenceGame(taskId) {
   const task = TASKS.find(t => t.id === taskId);
+  // Task 3 使用健康报告转述口语支架训练器（iframe 嵌入）
+  if (taskId === 3) {
+    showModal(`📝 句式游戏 — Task 3 ${task.name}`, `
+      <div class="iframe-modal-wrap">
+        <iframe class="iframe-modal-frame" src="https://liu9098.github.io/health-report-trainer/" allow="microphone; camera; fullscreen" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+    `);
+    document.querySelector('#modal-overlay .modal')?.classList.add('modal--wide');
+    addTask3FullscreenButton();
+    return;
+  }
   sentenceGameList = SENTENCES_BY_TASK[taskId] || SENTENCE_QUESTIONS;
   sentenceGameIndex = 0;
   sentenceGameScore = 0;

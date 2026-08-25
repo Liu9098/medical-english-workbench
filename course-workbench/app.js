@@ -1436,7 +1436,9 @@ function toggleRecording(btn) {
 function showQRModal(taskId) {
   const task = TASKS.find(t => t.id === taskId);
   if (!task) return;
-  const url = `https://course.example.com/join?task=${taskId}&class=eng-a`;
+  const url = taskId === 3
+    ? 'https://liu9098.github.io/medical-english-workbench/course-workbench/task3-voting/'
+    : `https://course.example.com/join?task=${taskId}&class=eng-a`;
 
   showModal(`${task.icon} ${task.name} — 任务二维码`, `
     <div class="qr-display">

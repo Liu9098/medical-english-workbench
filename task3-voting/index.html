@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Task 3 体检报告转述・角色扮演评价表</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  :root {
+    --c-blue:#4A7FD6; --c-teal:#1FA396; --c-purple:#E5852A;
+    --c-text:#1e293b; --c-muted:#64748b; --c-border:#e2e8f0;
+    --c-bg:#f1f5f9; --c-card:#ffffff; --c-track:#e2e8f0;
+    --c-yes:#10b981; --c-no:#94a3b8;
+  }
+  body {
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--c-bg); color:var(--c-text); line-height:1.6; padding-bottom:100px;
+  }
+  .container { max-width:640px; margin:0 auto; padding:12px; }
+
+  /* 标题 */
+  .header {
+    background:linear-gradient(135deg,#1FA396,#4A7FD6);
+    color:#fff; border-radius:14px; padding:24px 20px; text-align:center; margin-bottom:16px;
+    box-shadow:0 6px 18px rgba(31,163,150,.25);
+  }
+  .header h1 { font-size:17px; font-weight:700; margin-bottom:4px; }
+  .header .sub { font-size:13px; opacity:.85; }
+
+  /* 座号 */
+  .seat-bar {
+    background:var(--c-card); border-radius:14px; padding:18px 20px; margin-bottom:16px;
+    display:flex; align-items:center; gap:14px; box-shadow:0 2px 8px rgba(0,0,0,.06);
+  }
+  .seat-bar label { font-size:15px; font-weight:600; white-space:nowrap; }
+  .seat-bar select {
+    flex:1; height:46px; border:2px solid var(--c-border); border-radius:10px;
+    font-size:16px; font-weight:600; padding:0 12px; background:#f8fafc; color:var(--c-text);
+    appearance:none; -webkit-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 14px center;
+  }
+  .seat-bar select:focus { border-color:var(--c-teal); outline:none; }
+
+  /* 维度区块 */
+  .dimension { margin-bottom:16px; }
+  .dim-head {
+    border-radius:12px 12px 0 0; padding:14px 18px; color:#fff; font-weight:700;
+    display:flex; align-items:center; gap:10px;
+  }
+  .dim-head .dim-num {
+    width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,.25);
+    display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0;
+  }
+  .dim-head .dim-title { font-size:15px; }
+  .dim-head .dim-en { font-size:11px; opacity:.85; font-weight:400; margin-top:1px; }
+  .dim-head .dim-text { display:flex; flex-direction:column; }
+  .dim-blue .dim-head { background:var(--c-blue); }
+  .dim-teal .dim-head { background:var(--c-teal); }
+  .dim-purple .dim-head { background:var(--c-purple); }
+  .dim-body {
+    background:var(--c-card); border-radius:0 0 12px 12px; padding:8px 18px 18px;
+    box-shadow:0 2px 8px rgba(0,0,0,.06);
+  }
+
+  /* 评价项 */
+  .item { padding:14px 0; border-bottom:1px solid #f1f5f9; }
+  .item:last-child { border-bottom:none; }
+  .item-label { font-size:14px; font-weight:600; color:var(--c-text); margin-bottom:4px; }
+  .item-label .num { color:var(--c-muted); font-weight:400; margin-right:4px; }
+  .item-en { font-size:12px; color:var(--c-muted); margin-bottom:10px; }
+
+  /* 数字步进器 */
+  .stepper { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .step-btn {
+    width:44px; height:44px; border:2px solid var(--c-border); border-radius:10px;
+    background:#f8fafc; font-size:22px; color:var(--c-text); cursor:pointer; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; transition:all .15s;
+  }
+  .step-btn:active { background:#e2e8f0; transform:scale(.95); }
+  .step-input {
+    flex:1; height:44px; border:2px solid var(--c-border); border-radius:10px;
+    text-align:center; font-size:18px; font-weight:700; background:#f8fafc; color:var(--c-text);
+    max-width:100px;
+  }
+  .step-input:focus { border-color:var(--c-teal); outline:none; }
+  .step-unit { font-size:13px; color:var(--c-muted); }
+
+  /* Yes/No 切换 */
+  .yn-toggle { display:flex; gap:10px; margin-bottom:10px; }
+  .yn-opt {
+    flex:1; height:46px; border:2px solid var(--c-border); border-radius:10px;
+    background:#f8fafc; font-size:15px; font-weight:600; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:6px; transition:all .15s;
+    position:relative; color:var(--c-muted);
+  }
+  .yn-opt:active { transform:scale(.97); }
+  .yn-opt input { position:absolute; opacity:0; width:0; height:0; }
+  .yn-opt.sel-yes { background:#ecfdf5; border-color:var(--c-yes); color:#059669; }
+  .yn-opt.sel-no { background:#f8fafc; border-color:var(--c-no); color:#475569; }
+  .yn-opt .dot { width:18px; height:18px; border-radius:50%; border:2px solid currentColor; flex-shrink:0; }
+  .yn-opt.sel-yes .dot { background:var(--c-yes); }
+  .yn-opt.sel-no .dot { background:var(--c-no); }
+
+  /* 笔记框 */
+  .notes {
+    width:100%; min-height:56px; border:2px solid var(--c-border); border-radius:10px;
+    padding:10px 12px; font-size:14px; font-family:inherit; resize:vertical; background:#f8fafc;
+    color:var(--c-text); line-height:1.5;
+  }
+  .notes:focus { border-color:var(--c-teal); outline:none; background:#fff; }
+  .notes::placeholder { color:#cbd5e1; }
+
+  /* 底部按钮 */
+  .actions {
+    position:fixed; bottom:0; left:0; right:0; background:rgba(241,245,249,.95);
+    backdrop-filter:blur(8px); padding:12px 16px; display:flex; gap:12px; z-index:50;
+    border-top:1px solid var(--c-border); max-width:640px; margin:0 auto;
+  }
+  .btn {
+    height:50px; border-radius:12px; font-size:16px; font-weight:600; cursor:pointer;
+    border:none; transition:all .15s; display:flex; align-items:center; justify-content:center;
+  }
+  .btn:active { transform:scale(.97); }
+  .btn-clear { flex:1; background:transparent; border:2px solid #cbd5e1; color:var(--c-muted); }
+  .btn-submit { flex:2; background:linear-gradient(135deg,var(--c-teal),#4A7FD6); color:#fff;
+    box-shadow:0 4px 14px rgba(31,163,150,.3); }
+
+  /* 确认页 */
+  .confirm-overlay {
+    position:fixed; inset:0; background:#f1f5f9; z-index:100;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:40px 24px; text-align:center;
+  }
+  .confirm-overlay .check {
+    width:88px; height:88px; border-radius:50%; background:var(--c-yes);
+    display:flex; align-items:center; justify-content:center; margin-bottom:24px;
+    box-shadow:0 8px 24px rgba(16,185,129,.3); animation:pop .4s ease;
+  }
+  @keyframes pop { 0%{transform:scale(0);} 60%{transform:scale(1.15);} 100%{transform:scale(1);} }
+  .confirm-overlay .check svg { width:48px; height:48px; color:#fff; }
+  .confirm-overlay h2 { font-size:22px; margin-bottom:8px; }
+  .confirm-overlay .info { font-size:15px; color:var(--c-muted); margin-bottom:4px; }
+  .confirm-overlay .btn-edit {
+    margin-top:24px; height:48px; padding:0 32px; border-radius:12px; border:2px solid #cbd5e1;
+    background:transparent; font-size:15px; color:var(--c-muted); cursor:pointer;
+  }
+  .confirm-overlay .btn-edit:active { transform:scale(.97); }
+
+  /* Toast */
+  .toast {
+    position:fixed; top:20px; left:50%; transform:translateX(-50%) translateY(-100px);
+    background:#1e293b; color:#fff; padding:12px 24px; border-radius:10px; font-size:14px;
+    z-index:200; transition:transform .3s; white-space:nowrap;
+  }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+  .toast.err { background:#dc2626; }
+
+  .hidden { display:none !important; }
+</style>
+</head>
+<body>
+
+<!-- 评价表单 -->
+<div id="formPage" class="container">
+  <div class="header">
+    <h1>Task 3 体检报告转述・角色扮演评价表</h1>
+    <div class="sub">Peer-Assessment Checklist · 学生互评表</div>
+  </div>
+
+  <!-- 座号 -->
+  <div class="seat-bar">
+    <label>你的座号</label>
+    <select id="seatNumber">
+      <option value="">请选择 ▾</option>
+    </select>
+  </div>
+
+  <!-- 维度1 -->
+  <div class="dimension dim-blue">
+    <div class="dim-head">
+      <div class="dim-num">1</div>
+      <div class="dim-text">
+        <div class="dim-title">Professional English Expression Accuracy</div>
+        <div class="dim-en">专业英语表达准确度</div>
+      </div>
+    </div>
+    <div class="dim-body">
+      <!-- ① 适度、区间化表述 -->
+      <div class="item">
+        <div class="item-label"><span class="num">①</span>适度、区间化表述</div>
+        <div class="item-en">Mild/range-based descriptions</div>
+        <div class="stepper">
+          <button type="button" class="step-btn" onclick="adjust('q1_count',-1)">−</button>
+          <input type="number" id="q1_count" class="step-input" value="0" min="0" inputmode="numeric">
+          <button type="button" class="step-btn" onclick="adjust('q1_count',1)">+</button>
+          <span class="step-unit">次</span>
+        </div>
+        <textarea class="notes" id="q1_notes" placeholder="笔记：记录具体句型或表现…"></textarea>
+      </div>
+      <!-- ② 健康指标清晰讲解 -->
+      <div class="item">
+        <div class="item-label"><span class="num">②</span>健康指标清晰讲解</div>
+        <div class="item-en">Clear explanation of health indicators</div>
+        <div class="yn-toggle">
+          <label class="yn-opt" onclick="selectYN(this,'q2_yesno','Yes')">
+            <input type="radio" name="q2_yesno" value="Yes">
+            <span class="dot"></span>Yes
+          </label>
+          <label class="yn-opt" onclick="selectYN(this,'q2_yesno','No')">
+            <input type="radio" name="q2_yesno" value="No">
+            <span class="dot"></span>No
+          </label>
+        </div>
+        <textarea class="notes" id="q2_notes" placeholder="笔记：说明理由…"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- 维度2 -->
+  <div class="dimension dim-teal">
+    <div class="dim-head">
+      <div class="dim-num">2</div>
+      <div class="dim-text">
+        <div class="dim-title">Humanistic Communication Literacy</div>
+        <div class="dim-en">人文沟通服务素养</div>
+      </div>
+    </div>
+    <div class="dim-body">
+      <!-- ① 共情句式运用 -->
+      <div class="item">
+        <div class="item-label"><span class="num">①</span>共情句式运用</div>
+        <div class="item-en">Empathy sentence patterns</div>
+        <div class="stepper">
+          <button type="button" class="step-btn" onclick="adjust('q3_count',-1)">−</button>
+          <input type="number" id="q3_count" class="step-input" value="0" min="0" inputmode="numeric">
+          <button type="button" class="step-btn" onclick="adjust('q3_count',1)">+</button>
+          <span class="step-unit">次</span>
+        </div>
+        <textarea class="notes" id="q3_notes" placeholder="笔记：记录共情句型…"></textarea>
+      </div>
+      <!-- ② 主动问询沟通 -->
+      <div class="item">
+        <div class="item-label"><span class="num">②</span>主动问询沟通</div>
+        <div class="item-en">Active inquiries</div>
+        <div class="stepper">
+          <button type="button" class="step-btn" onclick="adjust('q4_count',-1)">−</button>
+          <input type="number" id="q4_count" class="step-input" value="0" min="0" inputmode="numeric">
+          <button type="button" class="step-btn" onclick="adjust('q4_count',1)">+</button>
+          <span class="step-unit">次</span>
+        </div>
+        <textarea class="notes" id="q4_notes" placeholder="笔记：记录问诊表现…"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- 维度3 -->
+  <div class="dimension dim-purple">
+    <div class="dim-head">
+      <div class="dim-num">3</div>
+      <div class="dim-text">
+        <div class="dim-title">Cross-cultural Dissemination of Chinese Wellness Culture</div>
+        <div class="dim-en">中华康养文化跨文化传播</div>
+      </div>
+    </div>
+    <div class="dim-body">
+      <!-- ① 太极拳恰当介绍 -->
+      <div class="item">
+        <div class="item-label"><span class="num">①</span>太极拳恰当介绍</div>
+        <div class="item-en">Tai Chi introduced appropriately</div>
+        <div class="yn-toggle">
+          <label class="yn-opt" onclick="selectYN(this,'q5_yesno','Yes')">
+            <input type="radio" name="q5_yesno" value="Yes">
+            <span class="dot"></span>Yes
+          </label>
+          <label class="yn-opt" onclick="selectYN(this,'q5_yesno','No')">
+            <input type="radio" name="q5_yesno" value="No">
+            <span class="dot"></span>No
+          </label>
+        </div>
+        <textarea class="notes" id="q5_notes" placeholder="笔记：记录文化介绍内容…"></textarea>
+      </div>
+      <!-- ② 自然的文化表达 -->
+      <div class="item">
+        <div class="item-label"><span class="num">②</span>自然的文化表达</div>
+        <div class="item-en">Natural cultural expression</div>
+        <div class="yn-toggle">
+          <label class="yn-opt" onclick="selectYN(this,'q6_yesno','Yes')">
+            <input type="radio" name="q6_yesno" value="Yes">
+            <span class="dot"></span>Yes
+          </label>
+          <label class="yn-opt" onclick="selectYN(this,'q6_yesno','No')">
+            <input type="radio" name="q6_yesno" value="No">
+            <span class="dot"></span>No
+          </label>
+        </div>
+        <textarea class="notes" id="q6_notes" placeholder="笔记：说明理由…"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部按钮 -->
+  <div class="actions">
+    <button class="btn btn-clear" onclick="clearAll()">清空全部</button>
+    <button class="btn btn-submit" onclick="submitForm()">提交</button>
+  </div>
+</div>
+
+<!-- 确认页 -->
+<div id="confirmPage" class="confirm-overlay hidden">
+  <div class="check">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="4 12 10 18 20 6"></polyline>
+    </svg>
+  </div>
+  <h2>评价表已提交！</h2>
+  <div class="info" id="confirmSeat">座号：—</div>
+  <div class="info" id="confirmProgress">评价已提交，感谢参与！</div>
+  <button class="btn-edit" onclick="editForm()">修改评价</button>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<script>
+var TOTAL = 24;
+var STORAGE_KEY = 'roleplay_eval_form_v3';
+var SUBMIT_KEY = 'roleplay_eval_submitted_v3';
+
+/* ---------- 初始化座号选项 ---------- */
+(function init() {
+  var sel = document.getElementById('seatNumber');
+  for (var i = 1; i <= TOTAL; i++) {
+    var opt = document.createElement('option');
+    opt.value = i; opt.textContent = i + ' 号';
+    sel.appendChild(opt);
+  }
+  restoreForm();
+  checkSubmitted();
+})();
+
+/* ---------- 数字步进器 ---------- */
+function adjust(id, delta) {
+  var el = document.getElementById(id);
+  var v = parseInt(el.value) || 0;
+  v = Math.max(0, v + delta);
+  el.value = v;
+  autoSave();
+}
+
+/* ---------- Yes/No 选择 ---------- */
+function selectYN(el, name, val) {
+  var group = el.parentNode;
+  var opts = group.querySelectorAll('.yn-opt');
+  opts.forEach(function(o) {
+    o.classList.remove('sel-yes', 'sel-no');
+    o.querySelector('input').checked = false;
+  });
+  el.classList.add(val === 'Yes' ? 'sel-yes' : 'sel-no');
+  el.querySelector('input').checked = true;
+  autoSave();
+}
+
+/* ---------- 自动保存 ---------- */
+function autoSave() {
+  var data = collectForm();
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+function collectForm() {
+  return {
+    seatNumber: document.getElementById('seatNumber').value,
+    q1_count: document.getElementById('q1_count').value,
+    q1_notes: document.getElementById('q1_notes').value,
+    q2_yesno: getRadio('q2_yesno'),
+    q2_notes: document.getElementById('q2_notes').value,
+    q3_count: document.getElementById('q3_count').value,
+    q3_notes: document.getElementById('q3_notes').value,
+    q4_count: document.getElementById('q4_count').value,
+    q4_notes: document.getElementById('q4_notes').value,
+    q5_yesno: getRadio('q5_yesno'),
+    q5_notes: document.getElementById('q5_notes').value,
+    q6_yesno: getRadio('q6_yesno'),
+    q6_notes: document.getElementById('q6_notes').value,
+  };
+}
+
+function getRadio(name) {
+  var checked = document.querySelector('input[name="' + name + '"]:checked');
+  return checked ? checked.value : '';
+}
+
+/* ---------- 恢复表单 ---------- */
+function restoreForm() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    var data = JSON.parse(raw);
+    if (data.seatNumber) document.getElementById('seatNumber').value = data.seatNumber;
+    if (data.q1_count !== undefined) document.getElementById('q1_count').value = data.q1_count;
+    if (data.q1_notes) document.getElementById('q1_notes').value = data.q1_notes;
+    if (data.q2_notes) document.getElementById('q2_notes').value = data.q2_notes;
+    if (data.q3_count !== undefined) document.getElementById('q3_count').value = data.q3_count;
+    if (data.q3_notes) document.getElementById('q3_notes').value = data.q3_notes;
+    if (data.q4_count !== undefined) document.getElementById('q4_count').value = data.q4_count;
+    if (data.q4_notes) document.getElementById('q4_notes').value = data.q4_notes;
+    if (data.q5_notes) document.getElementById('q5_notes').value = data.q5_notes;
+    if (data.q6_notes) document.getElementById('q6_notes').value = data.q6_notes;
+    ['q2_yesno','q5_yesno','q6_yesno'].forEach(function(name) {
+      var val = data[name];
+      if (val) {
+        var labels = document.querySelectorAll('input[name="' + name + '"]');
+        labels.forEach(function(inp) {
+          if (inp.value === val) {
+            inp.checked = true;
+            var parent = inp.closest('.yn-opt');
+            if (parent) parent.classList.add(val === 'Yes' ? 'sel-yes' : 'sel-no');
+          }
+        });
+      }
+    });
+  } catch(e) {}
+}
+
+/* ---------- 检查是否已提交（本机） ---------- */
+function checkSubmitted() {
+  var submitted = false;
+  try { submitted = localStorage.getItem(SUBMIT_KEY) === '1'; } catch(e) {}
+  if (!submitted) return;
+  var seat = null;
+  try { var d = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); seat = d.seatNumber; } catch(e) {}
+  if (!seat) { clearSubmitFlag(); return; }
+  showConfirm(seat);
+}
+
+/* ---------- 显示确认页 ---------- */
+function showConfirm(seat) {
+  document.getElementById('confirmSeat').textContent = '座号：' + seat;
+  document.getElementById('confirmProgress').textContent = '评价已提交，感谢参与！';
+  document.getElementById('formPage').classList.add('hidden');
+  document.getElementById('confirmPage').classList.remove('hidden');
+}
+
+function editForm() {
+  clearSubmitFlag();
+  document.getElementById('confirmPage').classList.add('hidden');
+  document.getElementById('formPage').classList.remove('hidden');
+  restoreForm();
+}
+
+function clearSubmitFlag() {
+  try { localStorage.removeItem(SUBMIT_KEY); } catch(e) {}
+}
+
+/* ---------- 提交表单（本机保存） ---------- */
+function submitForm() {
+  var data = collectForm();
+  if (!data.seatNumber) { showToast('请先选择座号', true); return; }
+  if (data.q2_yesno === '') { showToast('请选择「健康指标清晰讲解」', true); return; }
+  if (data.q5_yesno === '') { showToast('请选择「太极拳恰当介绍」', true); return; }
+  if (data.q6_yesno === '') { showToast('请选择「自然的文化表达」', true); return; }
+
+  autoSave();
+  try { localStorage.setItem(SUBMIT_KEY, '1'); } catch(e) {}
+  showConfirm(data.seatNumber);
+}
+
+/* ---------- 清空全部 ---------- */
+function clearAll() {
+  if (!confirm('确定要清空当前页面的所有输入和选择吗？\n（不影响已提交的数据）')) return;
+  document.getElementById('seatNumber').value = '';
+  ['q1_count','q3_count','q4_count'].forEach(function(id) {
+    document.getElementById(id).value = '0';
+  });
+  ['q1_notes','q2_notes','q3_notes','q4_notes','q5_notes','q6_notes'].forEach(function(id) {
+    document.getElementById(id).value = '';
+  });
+  ['q2_yesno','q5_yesno','q6_yesno'].forEach(function(name) {
+    document.querySelectorAll('input[name="' + name + '"]').forEach(function(inp) {
+      inp.checked = false;
+      var p = inp.closest('.yn-opt');
+      if (p) p.classList.remove('sel-yes', 'sel-no');
+    });
+  });
+  try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+  showToast('已清空');
+}
+
+/* ---------- Toast ---------- */
+function showToast(msg, isErr) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isErr ? ' err' : '');
+  setTimeout(function() { t.className = 'toast'; }, 2200);
+}
+
+/* ---------- 输入变化时自动保存 ---------- */
+document.querySelectorAll('input,textarea,select').forEach(function(el) {
+  el.addEventListener('change', autoSave);
+  el.addEventListener('input', autoSave);
+});
+</script>
+</body>
+</html>

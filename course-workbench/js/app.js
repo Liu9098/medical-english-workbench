@@ -1436,7 +1436,7 @@ function toggleRecording(btn) {
 function showQRModal(taskId) {
   const task = TASKS.find(t => t.id === taskId);
   if (!task) return;
-  const url = `https://course.example.com/join?task=${taskId}&class=eng-a`;
+  const url = taskId === 3 ? 'https://tranquil-meerkat-9de0a1.netlify.app/' : `https://course.example.com/join?task=${taskId}&class=eng-a`;
 
   showModal(`${task.icon} ${task.name} — 任务二维码`, `
     <div class="qr-display">

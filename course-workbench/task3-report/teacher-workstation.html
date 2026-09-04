@@ -77,9 +77,7 @@ body {
   color: var(--ink);
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
-  background:
-    linear-gradient(180deg, rgba(4,18,34,0.78) 0%, rgba(4,18,34,0.88) 100%),
-    url('bg-medical.png') center/cover no-repeat fixed;
+  background: linear-gradient(180deg, #3c434c 0%, #2c3138 100%);
   min-height: 100vh;
 }
 
@@ -1246,38 +1244,38 @@ body {
 
   <div class="dashboard">
 
-    <!-- 6 Tasks Navigation -->
-    <div class="task-nav">
-      <div class="task-nav__item">
+    <!-- Task 导航：默认 Task 3 高亮（本次课） -->
+    <div class="task-nav" id="taskNav">
+      <div class="task-nav__item" onclick="setActiveTask(1)">
         <span class="task-nav__num">1</span>
         <span class="task-nav__name">体检接待</span>
-        <span class="task-nav__en">Welcoming Foreign Clients</span>
+        <span class="task-nav__en">Welcoming Clients</span>
       </div>
-      <div class="task-nav__item">
+      <div class="task-nav__item" onclick="setActiveTask(2)">
         <span class="task-nav__num">2</span>
-        <span class="task-nav__name">信息问询</span>
-        <span class="task-nav__en">Taking Health History</span>
+        <span class="task-nav__name">信息登记</span>
+        <span class="task-nav__en">Registration</span>
       </div>
-      <div class="task-nav__item task-nav__item--active">
+      <div class="task-nav__item task-nav__item--active" onclick="setActiveTask(3)">
         <span class="task-nav__num">3</span>
         <span class="task-nav__name">报告转述</span>
-        <span class="task-nav__en">Explaining Lab Reports</span>
+        <span class="task-nav__en">Explaining Reports</span>
         <span class="task-nav__badge">本次课</span>
       </div>
-      <div class="task-nav__item">
+      <div class="task-nav__item" onclick="setActiveTask(4)">
         <span class="task-nav__num">4</span>
-        <span class="task-nav__name">膳食指导</span>
-        <span class="task-nav__en">Guiding Daily Diets</span>
+        <span class="task-nav__name">健康建议</span>
+        <span class="task-nav__en">Health Advice</span>
       </div>
-      <div class="task-nav__item">
+      <div class="task-nav__item" onclick="setActiveTask(5)">
         <span class="task-nav__num">5</span>
-        <span class="task-nav__name">运动建议</span>
-        <span class="task-nav__en">Giving Exercise Suggestions</span>
+        <span class="task-nav__name">复诊预约</span>
+        <span class="task-nav__en">Follow-up</span>
       </div>
-      <div class="task-nav__item">
+      <div class="task-nav__item" onclick="setActiveTask(6)">
         <span class="task-nav__num">6</span>
-        <span class="task-nav__name">健康维持</span>
-        <span class="task-nav__en">Maintaining Personal Health</span>
+        <span class="task-nav__name">投诉处理</span>
+        <span class="task-nav__en">Complaint</span>
       </div>
     </div>
 
@@ -1338,17 +1336,7 @@ body {
       </div>
     </div>
 
-    <div class="dashboard__hints">
-      <span class="dashboard__hint">
-        <kbd>↑↓</kbd> 切换小组
-      </span>
-      <span class="dashboard__hint">
-        <kbd>Enter</kbd> 查看报告
-      </span>
-      <span class="dashboard__hint">
-        <kbd>Esc</kbd> 返回工作台
-      </span>
-    </div>
+    <!-- 首页键盘提示已移除；↑↓ 隐藏切换小组仍可在报告页使用 -->
   </div>
 
 </div>
@@ -1359,7 +1347,7 @@ body {
 <div class="page page--report" id="pageReport" style="display:none">
 
   <div class="report-topbar">
-    <button class="btn-back" onclick="backToDashboard()">
+    <button class="btn-back" onclick="returnToWorkbench()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M19 12H5M12 19l-7-7 7-7"/>
       </svg>
@@ -1385,7 +1373,7 @@ body {
 const groupReports = {
 
   1: {
-    scenario: '体检报告指标转述解读',
+    scenario: '体检报告解读',
     dimensions: [
       {
         num: 1,
@@ -1443,7 +1431,7 @@ const groupReports = {
       },
       {
         label: '信息结构 · 循序渐进',
-        note: '对话整体遵循"查看报告→发现问题→提出建议→推荐运动"的信息递进逻辑，条理基本清晰。'
+        note: '对话整体遵循"情况概括 → 描述指标 → 提示风险 → 给出建议"的信息递进逻辑，条理基本清晰。'
       }
     ],
     optimizations: [
@@ -1789,6 +1777,16 @@ const groupReports = {
 const TOTAL_GROUPS = 5;
 let sessionStarted = false;
 let selectedGroup = null;
+let activeTask = 3;
+
+// 切换顶部任务卡高亮（默认 Task 3 为本次课）
+function setActiveTask(n) {
+  activeTask = n;
+  const items = document.querySelectorAll('#taskNav .task-nav__item');
+  items.forEach(it => it.classList.remove('task-nav__item--active'));
+  const target = document.querySelector('#taskNav .task-nav__item:nth-child(' + n + ')');
+  if (target) target.classList.add('task-nav__item--active');
+}
 
 // ========================================
 // 进入小组选择页 / 返回就绪页
@@ -1889,6 +1887,13 @@ function backToDashboard() {
       dashPage.classList.add('page--active');
     });
   }, 350);
+}
+
+// 返回工作台：回到首页（任务卡 + 选择小组查看报告）
+function returnToWorkbench() {
+  document.getElementById('stageSelect').style.display = 'none';
+  document.getElementById('stageReady').style.display = 'flex';
+  backToDashboard();
 }
 
 // ========================================
@@ -2024,30 +2029,47 @@ function renderReport(n) {
 // Keyboard Shortcuts
 // ========================================
 document.addEventListener('keydown', function(e) {
-  const onDashboard = document.getElementById('pageDashboard').classList.contains('page--active');
-
-  if (onDashboard) {
-    if (e.key === 'Enter') {
-      if (!sessionStarted) { startSession(); return; }
-      if (selectedGroup) { openReport(); return; }
-      return;
-    }
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      const dir = e.key === 'ArrowDown' ? 1 : -1;
-      let next = selectedGroup ? selectedGroup + dir : 1;
-      if (next < 1) next = TOTAL_GROUPS;
-      if (next > TOTAL_GROUPS) next = 1;
-      selectGroup(next);
-      return;
-    }
-  } else {
-    if (e.key === 'Escape') {
-      backToDashboard();
-      return;
-    }
+  // 隐藏式小组切换：仅在报告页内用 ↑↓ 切换 Group
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    const rp = document.getElementById('pageReport');
+    if (rp.style.display === 'none') return;
+    e.preventDefault();
+    const dir = e.key === 'ArrowDown' ? 1 : -1;
+    let next = selectedGroup ? selectedGroup + dir : 1;
+    if (next < 1) next = TOTAL_GROUPS;
+    if (next > TOTAL_GROUPS) next = 1;
+    selectedGroup = next;
+    renderReport(next);
+    showWorkToast('Group ' + next);
+    return;
+  }
+  if (e.key === 'Escape') {
+    returnToWorkbench();
+    return;
   }
 });
+
+// 联动：从录音工作台经 ?group=N 自动打开对应小组报告（无参数时保持原流程不变）
+(function initFromUrl() {
+  const p = new URLSearchParams(location.search);
+  const g = parseInt(p.get('group'), 10);
+  if (g >= 1 && g <= TOTAL_GROUPS && groupReports[g]) {
+    selectedGroup = g;
+    renderReport(g);
+    const dash = document.getElementById('pageDashboard');
+    const rp = document.getElementById('pageReport');
+    dash.classList.remove('page--active');
+    dash.style.display = 'none';
+    rp.style.display = 'flex';
+    requestAnimationFrame(() => {
+      rp.classList.add('page--active');
+      window.scrollTo(0, 0);
+    });
+  }
+})();
+
+// 默认停留在首页工作台（Task 3 高亮），由用户点击「选择小组查看报告」进入
+activeTask = 3;
 </script>
 
 </body>

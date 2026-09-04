@@ -1441,6 +1441,15 @@ a.tool-card {
   border: none;
   background: #042212;
 }
+
+/* 录音工作台 16:9 大屏专用弹窗（宽屏、紧凑边距，高度由 JS 动态算 16:9） */
+.modal--recorder {
+  max-width: 94vw !important;
+  width: 94vw !important;
+}
+.modal--recorder .modal-body {
+  padding: 10px 14px;
+}
 @media (max-width: 900px) {
   .modal--wide { max-width: 96vw; width: 96vw; }
   .modal--wide .modal-body { padding: 12px; }

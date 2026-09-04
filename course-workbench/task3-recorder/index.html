@@ -1,1 +1,1058 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>角色扮演录音工作台</title>
+<style>
+/* ========================================
+   Reset & Base
+   ======================================== */
+*, *::before, *::after { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: #070c18;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  overflow: hidden;
+}
 
+/* 16:9 viewport using vmin scaling */
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, #0c1a3a 0%, #14235a 45%, #2a1b52 100%);
+  color: #fff;
+  overflow: hidden;
+}
+
+/* ====== 嵌入 iframe 模式：自动切换为百分比布局（解决 iframe 内 vh/vw/vmin 失效黑屏） ====== */
+html.in-iframe,
+html.in-iframe body {
+  overflow: auto;
+}
+html.in-iframe #app {
+  width: 100%;
+  height: auto;
+  min-height: 56.25vw; /* 9/16 = 0.5625 */
+  aspect-ratio: 16 / 9;
+}
+html.in-iframe .screen {
+  position: relative;
+  min-height: 56.25vw;
+  padding: 3%;
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4vmin;
+}
+.screen.active { display: flex; }
+
+/* ========================================
+   Recording Screen
+   ======================================== */
+.rec-topbar {
+  position: absolute;
+  top: 4vmin;
+  left: 6vmin;
+  display: flex;
+  align-items: center;
+  gap: 2vmin;
+  font-size: 3.2vmin;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.rec-dot {
+  width: 3vmin;
+  height: 3vmin;
+  min-width: 18px;
+  min-height: 18px;
+  border-radius: 50%;
+  background: #ff2d55;
+  box-shadow: 0 0 1.2vmin rgba(255, 45, 85, 0.9);
+}
+
+/* 只有录音中才闪烁 */
+.rec-dot.recording {
+  animation: pulse-dot 0.85s infinite;
+}
+
+@keyframes pulse-dot {
+  0%   { opacity: 1;    transform: scale(1);    box-shadow: 0 0 0 0 rgba(255, 45, 85, 0.75); }
+  50%  { opacity: 0.18; transform: scale(0.66); box-shadow: 0 0 1.8vmin 0.7vmin rgba(255, 45, 85, 0); }
+  100% { opacity: 1;    transform: scale(1);    box-shadow: 0 0 0 0 rgba(255, 45, 85, 0); }
+}
+
+.rec-title-wrap {
+  text-align: center;
+  margin-top: 2vmin;
+}
+
+.rec-title {
+  font-size: 6.5vmin;
+  font-weight: 800;
+  line-height: 1.15;
+  margin: 0 0 1vmin;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.35);
+}
+
+/* 主题行：字号略小于主标题 */
+.rec-theme {
+  font-size: 4.2vmin;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 1.2vmin;
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  line-height: 1.4;
+}
+
+.rec-theme::first-line {
+  font-size: 4.2vmin;
+}
+
+.rec-subtitle {
+  font-size: 2.4vmin;
+  color: rgba(255,255,255,0.72);
+  font-weight: 500;
+}
+
+.rec-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4vmin;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  padding: 3vmin 0;
+}
+
+/* Role Cards — 无边框无背景，图片自然融入 */
+.role-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  user-select: none;
+}
+
+.role-avatar {
+  width: 22vmin;
+  height: 28vmin;
+  min-width: 150px;
+  min-height: 200px;
+  border-radius: 2.5vmin;
+  overflow: hidden;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.2vmin;
+}
+
+.role-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+
+.role-avatar svg {
+  width: 65%;
+  height: 65%;
+  fill: rgba(255,255,255,0.9);
+}
+
+.role-name {
+  font-size: 2.6vmin;
+  font-weight: 700;
+  margin-bottom: 0.8vmin;
+}
+
+.role-speaking {
+  display: none;
+}
+
+/* Waveform canvas (上下对称波动) */
+.waveform-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 34vmin;
+  min-height: 220px;
+  max-width: 55%;
+  padding: 0 2vmin;
+}
+
+.wave-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.rec-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.2vmin;
+  margin-bottom: 2vmin;
+}
+
+.btn-record {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.4vmin;
+  min-width: 32vmin;
+  padding: 2.4vmin 5vmin;
+  border: none;
+  border-radius: 999px;
+  font-size: 2.6vmin;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(90deg, #3b82f6 0%, #7c3aed 100%);
+  box-shadow: 0 1vmin 3vmin rgba(59, 130, 246, 0.35);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.btn-record:hover { transform: translateY(-0.25vmin); box-shadow: 0 1.2vmin 3.6vmin rgba(59, 130, 246, 0.42); }
+.btn-record:active { transform: translateY(0); }
+
+.btn-record.stop {
+  background: linear-gradient(90deg, #ef4444 0%, #db2777 100%);
+  box-shadow: 0 1vmin 3vmin rgba(239, 68, 68, 0.35);
+}
+
+.btn-record:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.rec-hint {
+  font-size: 1.9vmin;
+  color: rgba(255,255,255,0.62);
+  font-weight: 500;
+}
+
+/* 录音控制按钮行 */
+.rec-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3vmin;
+}
+
+/* 选择小组按钮（次要样式） */
+.btn-group {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2vmin;
+  min-width: 26vmin;
+  padding: 2.4vmin 4vmin;
+  border: 1px solid rgba(255,255,255,0.32);
+  border-radius: 999px;
+  font-size: 2.6vmin;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+.btn-group:hover { background: rgba(255,255,255,0.16); transform: translateY(-0.25vmin); }
+.btn-group:active { transform: translateY(0); }
+.btn-group:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-group svg { width: 2.6vmin; height: 2.6vmin; }
+.btn-group .caret { transition: transform 0.2s ease; }
+.group-select.open .btn-group .caret { transform: rotate(180deg); }
+
+/* 面板式下拉（向上展开，适配大屏投影） */
+.group-select { position: relative; }
+.group-dropdown {
+  position: absolute;
+  bottom: calc(100% + 1.5vmin);
+  left: 50%;
+  transform: translateX(-50%) translateY(1.4vmin);
+  width: 30vmin;
+  min-width: 210px;
+  background: rgba(10, 22, 48, 0.98);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 2vmin;
+  box-shadow: 0 2vmin 6vmin rgba(0,0,0,0.55);
+  padding: 1vmin;
+  display: none;
+  flex-direction: column;
+  gap: 0.6vmin;
+  z-index: 50;
+  backdrop-filter: blur(14px);
+}
+.group-select.open .group-dropdown {
+  display: flex;
+  transform: translateX(-50%) translateY(0);
+}
+.group-option {
+  display: flex;
+  align-items: center;
+  gap: 1.4vmin;
+  width: 100%;
+  padding: 1.9vmin 2.2vmin;
+  border: none;
+  border-radius: 1.2vmin;
+  background: transparent;
+  color: #fff;
+  font-size: 2.7vmin;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.group-option:hover { background: rgba(59,130,246,0.22); }
+.group-option.selected { background: rgba(124,58,237,0.30); }
+.group-option .opt-dot {
+  width: 1.8vmin; height: 1.8vmin; min-width: 12px; min-height: 12px;
+  border-radius: 50%; background: #3b82f6; flex-shrink: 0;
+}
+.group-option.selected .opt-dot { background: #a855f7; }
+
+/* ========================================
+   Processing Screen
+   ======================================== */
+.processing-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4vmin;
+}
+
+.spinner {
+  width: 10vmin;
+  height: 10vmin;
+  min-width: 64px;
+  min-height: 64px;
+  border-radius: 50%;
+  border: 0.8vmin solid rgba(255,255,255,0.12);
+  border-top-color: #38bdf8;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.processing-text {
+  font-size: 3.4vmin;
+  font-weight: 600;
+  color: rgba(255,255,255,0.92);
+}
+
+.processing-sub {
+  font-size: 2vmin;
+  color: rgba(255,255,255,0.6);
+}
+
+/* ========================================
+   Result Screen
+   ======================================== */
+.result-inner {
+  width: 100%;
+  max-width: 140vmin;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.result-header {
+  text-align: center;
+  margin-bottom: 2vmin;
+}
+
+.result-title {
+  font-size: 4.4vmin;
+  font-weight: 800;
+  margin: 0 0 0.5vmin;
+}
+
+.result-subtitle {
+  font-size: 1.8vmin;
+  color: rgba(255,255,255,0.65);
+}
+
+.result-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2vmin;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.panel {
+  flex: 1;
+  min-height: 0;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 2vmin;
+  padding: 2vmin 2.6vmin;
+  overflow: auto;
+  backdrop-filter: blur(10px);
+}
+
+.panel-title {
+  font-size: 2.3vmin;
+  font-weight: 700;
+  margin: 0 0 1.4vmin;
+  padding-bottom: 0.8vmin;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.dialogue-line {
+  margin-bottom: 1vmin;
+  font-size: 2.3vmin;
+  line-height: 1.42;
+}
+
+.dialogue-speaker {
+  display: inline-block;
+  font-weight: 700;
+  color: #38bdf8;
+  min-width: 7.5vmin;
+  margin-right: 0.8vmin;
+}
+
+.dialogue-speaker.b { color: #a78bfa; }
+
+.report-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.report-item {
+  margin-bottom: 2.2vmin;
+}
+
+.report-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 2vmin;
+  font-weight: 700;
+  margin-bottom: 0.8vmin;
+}
+
+.report-score {
+  display: flex;
+  gap: 0.5vmin;
+}
+
+.star {
+  width: 2.2vmin;
+  height: 2.2vmin;
+  color: #fbbf24;
+}
+
+.star.empty { color: rgba(255,255,255,0.18); }
+
+.report-bar {
+  height: 1.2vmin;
+  background: rgba(255,255,255,0.1);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.report-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  transition: width 0.8s ease;
+}
+
+.report-comment {
+  font-size: 1.8vmin;
+  color: rgba(255,255,255,0.7);
+  margin-top: 0.7vmin;
+  line-height: 1.45;
+}
+
+.result-footer {
+  display: flex;
+  justify-content: center;
+  padding-top: 2vmin;
+}
+
+.btn-return {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1vmin;
+  padding: 1.6vmin 4vmin;
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 999px;
+  font-size: 2vmin;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+/* 结果页下方跳转按钮 */
+.result-actions {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 3vmin;
+  padding: 0 2vmin;
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24vmin;
+  padding: 1.8vmin 3.5vmin;
+  border: none;
+  border-radius: 999px;
+  font-size: 2.3vmin;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, #3b82f6 0%, #7c3aed 100%);
+  box-shadow: 0 1vmin 3vmin rgba(59, 130, 246, 0.35);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.btn-action:nth-child(2) {
+  background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+  box-shadow: 0 1vmin 3vmin rgba(6, 182, 212, 0.35);
+}
+
+.btn-action:hover { transform: translateY(-0.3vmin); filter: brightness(1.06); }
+.btn-action:active { transform: translateY(0); }
+
+.btn-return:hover { background: rgba(255,255,255,0.16); transform: translateY(-0.2vmin); }
+
+/* Scrollbar for panels */
+.panel::-webkit-scrollbar { width: 0.6vmin; }
+.panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 999px; }
+
+/* Utility */
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ========== Recording Screen ========== -->
+  <div class="screen screen--recording active" id="screenRecording">
+    <div class="rec-topbar">
+      <div class="rec-dot" id="recDot"></div>
+      <span id="timerText">00:00</span>
+    </div>
+
+    <div class="rec-title-wrap">
+      <h1 class="rec-title">双人角色扮演录音中</h1>
+      <p class="rec-theme">主题：体检报告解读<br>Health Report Explanation</p>
+      <p class="rec-subtitle">请根据角色卡片完成口语表达</p>
+    </div>
+
+    <div class="rec-stage">
+      <div class="role-card" id="cardA" data-role="A">
+        <div class="role-avatar" id="avatarA">
+          <img src="avatars/student-a.jpg" alt="Health Manager"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+          <svg style="display:none" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="22" r="12"/><path d="M16 54c0-8.8 7.2-16 16-16s16 7.2 16 16"/></svg>
+        </div>
+        <div class="role-name">Health Manager</div>
+      </div>
+
+      <div class="waveform-wrap">
+        <canvas id="waveCanvas" class="wave-canvas"></canvas>
+      </div>
+
+      <div class="role-card" id="cardB" data-role="B">
+        <div class="role-avatar" id="avatarB">
+          <img src="avatars/student-b.jpg" alt="Foreign Client"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+          <svg style="display:none" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="22" r="12"/><path d="M20 54c0-6.6 5.4-12 12-12s12 5.4 12 12"/><path d="M26 30c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+        </div>
+        <div class="role-name">Foreign Client</div>
+      </div>
+    </div>
+
+    <div class="rec-controls">
+      <div class="rec-buttons">
+        <div class="group-select" id="groupSelect">
+          <button class="btn-group" id="btnGroup" onclick="toggleGroupDropdown()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span id="groupBtnText">选择小组</span>
+            <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="group-dropdown" id="groupDropdown">
+            <button class="group-option" data-group="1" onclick="selectGroup(1)"><span class="opt-dot"></span>第一组</button>
+            <button class="group-option" data-group="2" onclick="selectGroup(2)"><span class="opt-dot"></span>第二组</button>
+            <button class="group-option" data-group="3" onclick="selectGroup(3)"><span class="opt-dot"></span>第三组</button>
+            <button class="group-option" data-group="4" onclick="selectGroup(4)"><span class="opt-dot"></span>第四组</button>
+            <button class="group-option" data-group="5" onclick="selectGroup(5)"><span class="opt-dot"></span>第五组</button>
+          </div>
+        </div>
+        <button class="btn-record" id="btnRecord" onclick="toggleRecording()">
+          <svg width="2.4vmin" height="2.4vmin" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/></svg>
+          开始录音
+        </button>
+      </div>
+      <p class="rec-hint">录音过程中系统正在采集音频，识别结果稍后显示</p>
+    </div>
+  </div>
+
+  <!-- ========== Processing Screen ========== -->
+  <div class="screen screen--processing" id="screenProcessing">
+    <div class="processing-box">
+      <div class="spinner"></div>
+      <div class="processing-text">AI正在解析对话音频，请稍候...</div>
+      <div class="processing-sub" id="processingSub">请勿关闭页面</div>
+    </div>
+  </div>
+
+  <!-- ========== Result Screen ========== -->
+  <div class="screen screen--result" id="screenResult">
+    <div class="result-inner">
+      <div class="result-header">
+        <h2 class="result-title">角色扮演AI智检平台</h2>
+      </div>
+      <div class="result-body">
+        <div class="panel">
+          <h3 class="panel-title">对话文本识别</h3>
+          <div id="dialogueBox"></div>
+        </div>
+        <div class="result-actions">
+          <button class="btn-action" onclick="goPlatform('peer')">全班互评结果</button>
+          <button class="btn-action" onclick="goPlatform('ai')">AI质检报告</button>
+        </div>
+      </div>
+      <div class="result-footer">
+        <button class="btn-return" onclick="resetToRecord()">返回重新录制</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ========================================
+   iframe 嵌入检测（解决黑屏问题）
+   ======================================== */
+(function detectIframe() {
+  try {
+    if (window !== window.parent && window.parent.location.origin) {
+      document.documentElement.classList.add('in-iframe');
+    }
+  } catch(e) {
+    // 跨域时 parent.location 会抛异常，说明确实在 iframe 中
+    document.documentElement.classList.add('in-iframe');
+  }
+})();
+
+/* ========================================
+   Config & State
+   ======================================== */
+const params = new URLSearchParams(location.search);
+const demoMode = params.get('demo') === '1';
+const taskId = parseInt(params.get('taskId'), 10) || 3;
+
+// 跳转整门课程平台的链接（可按需修改）
+const PLATFORM_BASE = 'https://liu9098.github.io/medical-english-workbench/course-workbench';
+// 全班互评结果 → 学情分析 Task 3 界面
+const PLATFORM_PEER = PLATFORM_BASE + '/assets/task3-standalone.html';
+// AI质检报告 → 课堂互动工具箱 · 角色扮演AI质检报告 Task 3（质检工作台）
+const PLATFORM_AI = PLATFORM_BASE + '/task3-report/teacher-workstation.html';
+
+// 跳转到整门课程平台对应界面（嵌在平台内时用父窗口打开）
+function goPlatform(type) {
+  let url = type === 'peer' ? PLATFORM_PEER : PLATFORM_AI;
+  // 联动：若已选小组，跳转 AI 质检报告时自动打开该组分析结果
+  if (type === 'ai' && currentGroup) {
+    url += (url.indexOf('?') >= 0 ? '&' : '?') + 'group=' + currentGroup;
+  }
+  const w = (window.parent && window.parent !== window) ? window.parent : window;
+  w.open(url, '_blank');
+}
+
+let isRecording = false;
+let recordSeconds = 0;
+let timerInterval = null;
+let currentSpeaker = 'A';
+let currentGroup = null;
+
+/* ========================================
+   选择小组（面板式下拉，录音中锁定）
+   ======================================== */
+function toggleGroupDropdown() {
+  if (isRecording) return;                 // 录音中禁止修改
+  document.getElementById('groupSelect').classList.toggle('open');
+}
+
+function closeGroupDropdown() {
+  const sel = document.getElementById('groupSelect');
+  if (sel) sel.classList.remove('open');
+}
+
+function selectGroup(n) {
+  if (isRecording) return;
+  currentGroup = n;
+  document.getElementById('groupBtnText').textContent = '第 ' + n + ' 组';
+  document.querySelectorAll('.group-option').forEach(o => {
+    o.classList.toggle('selected', parseInt(o.dataset.group, 10) === n);
+  });
+  closeGroupDropdown();
+}
+
+// 点击空白处收起下拉
+document.addEventListener('click', function(e) {
+  const sel = document.getElementById('groupSelect');
+  if (sel && sel.classList.contains('open') && !sel.contains(e.target)) {
+    sel.classList.remove('open');
+  }
+});
+
+// Audio handles
+let mediaRecorder = null;
+let audioChunks = [];
+let audioStream = null;
+let audioContext = null;
+let analyser = null;
+let sourceNode = null;
+let dataArray = null;
+let rafId = null;
+
+/* ========================================
+   Waveform
+   ======================================== */
+const canvas = document.getElementById('waveCanvas');
+const ctx = canvas.getContext('2d');
+const WAVE_BARS = 72;
+
+function resizeCanvas() {
+  const rect = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+  canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+// 上下对称波动：圆头竖条，从中心向上下延伸，全局水平彩虹渐变
+function drawSymmetricWave(getAmp) {
+  const rect = canvas.getBoundingClientRect();
+  const w = rect.width, h = rect.height;
+  ctx.clearRect(0, 0, w, h);
+  const mid = h / 2;
+  const slot = w / WAVE_BARS;
+  const barW = Math.max(3, slot * 0.62);
+
+  // 全局水平彩虹渐变：红 → 橙 → 黄 → 绿 → 青 → 蓝 → 紫
+  const grad = ctx.createLinearGradient(0, 0, w, 0);
+  grad.addColorStop(0.00, '#ff3b3b');
+  grad.addColorStop(0.16, '#ff9f40');
+  grad.addColorStop(0.32, '#ffdd00');
+  grad.addColorStop(0.47, '#4ade80');
+  grad.addColorStop(0.62, '#22d3ee');
+  grad.addColorStop(0.77, '#3b82f6');
+  grad.addColorStop(0.90, '#a855f7');
+  grad.addColorStop(1.00, '#c084fc');
+
+  ctx.strokeStyle = grad;
+  ctx.lineWidth = barW;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.shadowColor = 'rgba(255,255,255,0.18)';
+  ctx.shadowBlur = 8;
+
+  for (let i = 0; i < WAVE_BARS; i++) {
+    const amp = getAmp(i, WAVE_BARS);
+    const barH = Math.max(2, amp * (h / 2) * 0.92);
+    const x = i * slot + slot / 2;
+    ctx.beginPath();
+    ctx.moveTo(x, mid - barH);
+    ctx.lineTo(x, mid + barH);
+    ctx.stroke();
+  }
+
+  ctx.shadowBlur = 0;
+  // 中线
+  ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, mid);
+  ctx.lineTo(w, mid);
+  ctx.stroke();
+}
+
+// 静态波形：未录音时显示，固定图案不跳动
+function drawStaticWave() {
+  drawSymmetricWave((i, n) => {
+    const x = i / n;
+    const env = Math.sin(x * Math.PI);            // 中间高、两端低
+    const ripple = Math.abs(Math.sin(x * Math.PI * 5)) * 0.25 + 0.4;
+    const v = 0.05 + env * 0.4 + ripple * env * 0.4;
+    return Math.max(0.05, Math.min(1, v));
+  });
+}
+
+function startRealWaveform() {
+  if (!analyser || !dataArray) return;
+  const update = () => {
+    if (!isRecording) return;
+    analyser.getByteFrequencyData(dataArray);
+    const step = Math.max(1, Math.floor(dataArray.length / WAVE_BARS));
+    drawSymmetricWave((i) => {
+      const value = dataArray[i * step] || 0;
+      return Math.max(0.05, Math.min(1, value / 255));
+    });
+    rafId = requestAnimationFrame(update);
+  };
+  update();
+}
+
+function startSimulatedWaveform() {
+  let t = 0;
+  const update = () => {
+    if (!isRecording) return;
+    t += 0.12;
+    drawSymmetricWave((i) => {
+      const env = Math.sin(t * 0.7 + i * 0.12) * 0.5 + 0.5;
+      const wave = Math.sin(t * 3 + i * 0.5) * 0.25 + 0.35;
+      const noise = Math.random() * 0.2;
+      return Math.max(0.05, Math.min(1, env * 0.6 + wave + noise));
+    });
+    rafId = requestAnimationFrame(update);
+  };
+  update();
+}
+
+function stopWaveform() {
+  if (rafId) cancelAnimationFrame(rafId);
+  rafId = null;
+  const rect = canvas.getBoundingClientRect();
+  ctx.clearRect(0, 0, rect.width, rect.height);
+}
+
+function initWaveform() {
+  resizeCanvas();
+  window.addEventListener('resize', () => {
+    resizeCanvas();
+    if (!isRecording) drawStaticWave();
+  });
+  drawStaticWave();
+}
+
+/* ========================================
+   Recording Logic
+   ======================================== */
+const timerText = document.getElementById('timerText');
+const btnRecord = document.getElementById('btnRecord');
+
+function formatTime(totalSeconds) {
+  const m = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+  const s = String(totalSeconds % 60).padStart(2, '0');
+  return `${m}:${s}`;
+}
+
+function startTimer() {
+  recordSeconds = 0;
+  timerText.textContent = formatTime(0);
+  timerInterval = setInterval(() => {
+    recordSeconds++;
+    timerText.textContent = formatTime(recordSeconds);
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+}
+
+async function realStartRecording() {
+  try {
+    audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    sourceNode = audioContext.createMediaStreamSource(audioStream);
+    analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
+    sourceNode.connect(analyser);
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+    audioChunks = [];
+    mediaRecorder = new MediaRecorder(audioStream);
+    mediaRecorder.ondataavailable = e => {
+      if (e.data && e.data.size > 0) audioChunks.push(e.data);
+    };
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+      // ============================================================
+      // CloudBase 上传对接位置：真实模式应在此处上传 blob 到云存储
+      // 并等待后端云函数返回 ASR 转写 + 大模型校正结果。
+      // 当前为无后端占位：直接把内置样例当作"返回结果"渲染。
+      // ============================================================
+    };
+    mediaRecorder.start();
+    startRealWaveform();
+  } catch (err) {
+    console.warn('麦克风权限失败，降级为模拟波形：', err);
+    startSimulatedWaveform();
+  }
+}
+
+function stopRealRecording() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+  }
+  if (audioStream) {
+    audioStream.getTracks().forEach(t => t.stop());
+    audioStream = null;
+  }
+  if (audioContext && audioContext.state !== 'closed') {
+    audioContext.close().catch(() => {});
+    audioContext = null;
+  }
+  sourceNode = null;
+  analyser = null;
+  dataArray = null;
+}
+
+function toggleRecording() {
+  if (!isRecording) {
+    isRecording = true;
+    document.getElementById('recDot').classList.add('recording');
+    closeGroupDropdown();                          // 开始录音后收起下拉
+    document.getElementById('btnGroup').disabled = true;  // 录音中锁定小组选择
+    startTimer();
+    btnRecord.classList.add('stop');
+    btnRecord.innerHTML = '<svg width="2.4vmin" height="2.4vmin" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>结束录音';
+
+    if (demoMode) {
+      startSimulatedWaveform();
+    } else {
+      realStartRecording();
+    }
+  } else {
+    isRecording = false;
+    document.getElementById('recDot').classList.remove('recording');
+    stopTimer();
+    stopWaveform();
+    document.getElementById('btnGroup').disabled = false;  // 结束录音后解锁
+    btnRecord.classList.remove('stop');
+    btnRecord.innerHTML = '<svg width="2.4vmin" height="2.4vmin" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/></svg>开始录音';
+    if (!demoMode) stopRealRecording();
+
+    goToProcessing();
+  }
+}
+
+/* ========================================
+   Mode-agnostic Processing → Result
+   ======================================== */
+function goToProcessing() {
+  switchScreen('screenProcessing');
+
+  const processTime = demoMode ? 4000 : 2000;
+  setTimeout(() => {
+    renderResult(SAMPLE_DIALOGUE);
+    switchScreen('screenResult');
+  }, processTime);
+}
+
+/* ========================================
+   Result Rendering
+   ======================================== */
+function switchScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function renderResult(dialogue) {
+  const dialogueBox = document.getElementById('dialogueBox');
+  dialogueBox.innerHTML = dialogue.map(line => `
+    <div class="dialogue-line">
+      <span class="dialogue-speaker ${line.speaker === 'B' ? 'b' : ''}">${line.speaker === 'A' ? 'Health Manager' : 'Foreign Client'}</span>
+      <span>${line.text}</span>
+    </div>
+  `).join('');
+}
+
+function renderStars(score) {
+  // score 1-5
+  const full = Math.round(score);
+  let html = '';
+  for (let i = 1; i <= 5; i++) {
+    html += `<svg class="star ${i > full ? 'empty' : ''}" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+  }
+  return html;
+}
+
+function resetToRecord() {
+  recordSeconds = 0;
+  timerText.textContent = '00:00';
+  document.getElementById('recDot').classList.remove('recording');
+  if (isRecording) {
+    isRecording = false;
+    stopTimer();
+    stopWaveform();
+    if (!demoMode) stopRealRecording();
+  }
+  document.getElementById('btnGroup').disabled = false;  // 返回重新录制时解锁小组选择
+  btnRecord.classList.remove('stop');
+  btnRecord.innerHTML = '<svg width="2.4vmin" height="2.4vmin" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/></svg>开始录音';
+  switchScreen('screenRecording');
+  drawStaticWave();
+}
+
+/* ========================================
+   Sample Data (Task 3: Report Interpretation)
+   ======================================== */
+const SAMPLE_DIALOGUE = [
+  { speaker: 'A', text: 'Good morning. Let\'s check your physical check-up results.' },
+  { speaker: 'B', text: 'Hello. I\'m a little worried. Are my test results OK?' },
+  { speaker: 'A', text: 'First, your blood pressure is high.' },
+  { speaker: 'B', text: 'Oh no, will I need to take any medicine?' },
+  { speaker: 'A', text: 'Not yet, just eat less salt every day.' },
+  { speaker: 'B', text: 'I really love salty food, it\'s hard to change.' },
+  { speaker: 'A', text: 'You have to control your salt intake. Next, your LDL cholesterol is also abnormal. And your BMI is above normal range.' },
+  { speaker: 'B', text: 'Oh… Is that serious?' },
+  { speaker: 'A', text: 'I totally get that you feel anxious. You must change your diet and start exercising right away.' },
+  { speaker: 'B', text: 'I know I should keep fit, but I don\'t know where to begin.' },
+  { speaker: 'A', text: 'All these problems come from an unhealthy lifestyle. You need to lose weight strictly.' },
+  { speaker: 'B', text: 'Hmm. What kind of food should I avoid exactly?' },
+  { speaker: 'A', text: 'You should eat less salty and fatty food, and exercise every week. You can try Tai Chi.' },
+  { speaker: 'B', text: 'Tai Chi? What benefits can it bring to me?' },
+  { speaker: 'A', text: 'It\'s good for health. You can have a try.' }
+];
+
+const SAMPLE_REPORT = [
+  { label: '词汇运用', score: 4, comment: '能准确使用体检场景核心词汇，如 cholesterol、BMI、blood pressure；个别术语搭配可更自然。' },
+  { label: '语法表现', score: 4, comment: '整体句式流畅，使用了条件句和比较结构；存在少量主谓一致小瑕疵。' },
+  { label: '交际完成度', score: 5, comment: '对话结构完整，开场、解释、建议、收尾均覆盖，互动自然。' },
+  { label: '体检场景用语准确度', score: 4, comment: '指标解释与建议表达专业，能使用柔和的区间描述，避免引起客户恐慌。' },
+  { label: '改进建议', score: 4, comment: '可适当增加中医养生理念的跨文化表达；减少指令式建议，多用协商式句型。' }
+];
+
+/* ========================================
+   Init
+   ======================================== */
+initWaveform();
+</script>
+</body>
+</html>

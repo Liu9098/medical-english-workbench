@@ -46,6 +46,9 @@ html.in-iframe .screen {
   padding: 3%;
 }
 
+/* 全屏模式下为浏览器通知条留出安全距离，避免标题被遮挡 */
+html.fs-safe-top #app { padding-top: 6vmin; }
+
 .screen {
   position: absolute;
   inset: 0;
@@ -161,18 +164,10 @@ html.in-iframe .screen {
   margin-bottom: 1.2vmin;
 }
 
-.role-avatar img {
+.avatar-svg {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: top center;
   display: block;
-}
-
-.role-avatar svg {
-  width: 65%;
-  height: 65%;
-  fill: rgba(255,255,255,0.9);
 }
 
 .role-name {
@@ -380,7 +375,7 @@ html.in-iframe .screen {
 }
 
 .result-title {
-  font-size: 4.4vmin;
+  font-size: 3.8vmin;
   font-weight: 800;
   margin: 0 0 0.5vmin;
 }
@@ -394,7 +389,6 @@ html.in-iframe .screen {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2vmin;
   min-height: 0;
   overflow: hidden;
 }
@@ -405,23 +399,23 @@ html.in-iframe .screen {
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.12);
   border-radius: 2vmin;
-  padding: 2vmin 2.6vmin;
+  padding: 1.6vmin 2.2vmin;
   overflow: auto;
   backdrop-filter: blur(10px);
 }
 
 .panel-title {
-  font-size: 2.3vmin;
+  font-size: 2.0vmin;
   font-weight: 700;
-  margin: 0 0 1.4vmin;
-  padding-bottom: 0.8vmin;
+  margin: 0 0 0.8vmin;
+  padding-bottom: 0.5vmin;
   border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
 .dialogue-line {
-  margin-bottom: 1vmin;
-  font-size: 2.3vmin;
-  line-height: 1.42;
+  margin-bottom: 0.55vmin;
+  font-size: 2.0vmin;
+  line-height: 1.32;
 }
 
 .dialogue-speaker {
@@ -490,7 +484,7 @@ html.in-iframe .screen {
 .result-footer {
   display: flex;
   justify-content: center;
-  padding-top: 2vmin;
+  padding-top: 1.4vmin;
 }
 
 .btn-return {
@@ -515,19 +509,21 @@ html.in-iframe .screen {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  gap: 3vmin;
-  padding: 0 2vmin;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2vmin;
+  padding: 1.4vmin 1vmin 0;
 }
 
 .btn-action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 24vmin;
-  padding: 1.8vmin 3.5vmin;
+  min-width: 18vmin;
+  padding: 1.4vmin 2.6vmin;
   border: none;
   border-radius: 999px;
-  font-size: 2.3vmin;
+  font-size: 2.1vmin;
   font-weight: 800;
   color: #fff;
   background: linear-gradient(135deg, #3b82f6 0%, #7c3aed 100%);
@@ -573,9 +569,24 @@ html.in-iframe .screen {
     <div class="rec-stage">
       <div class="role-card" id="cardA" data-role="A">
         <div class="role-avatar" id="avatarA">
-          <img src="avatars/student-a.jpg" alt="Health Manager"
-               onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
-          <svg style="display:none" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="22" r="12"/><path d="M16 54c0-8.8 7.2-16 16-16s16 7.2 16 16"/></svg>
+          <svg class="avatar-svg" viewBox="0 0 200 240" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="gradA" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#38bdf8"/>
+                <stop offset="1" stop-color="#1d4ed8"/>
+              </linearGradient>
+            </defs>
+            <rect x="0" y="0" width="200" height="240" rx="22" fill="url(#gradA)"/>
+            <path d="M28 240 C28 176 62 148 100 148 C138 148 172 176 172 240 Z" fill="#e2e8f0"/>
+            <path d="M100 148 L100 240" stroke="#cbd5e1" stroke-width="3"/>
+            <circle cx="100" cy="90" r="40" fill="#fcd9b8"/>
+            <path d="M60 84 C60 46 140 46 140 84 C140 70 120 60 100 60 C80 60 60 70 60 84 Z" fill="#4b3621"/>
+            <circle cx="86" cy="90" r="4" fill="#3b2f2f"/>
+            <circle cx="114" cy="90" r="4" fill="#3b2f2f"/>
+            <path d="M86 106 Q100 118 114 106" stroke="#b45309" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <rect x="90" y="172" width="20" height="7" rx="2" fill="#ef4444"/>
+            <rect x="96.5" y="165.5" width="7" height="20" rx="2" fill="#ef4444"/>
+          </svg>
         </div>
         <div class="role-name">Health Manager</div>
       </div>
@@ -586,9 +597,23 @@ html.in-iframe .screen {
 
       <div class="role-card" id="cardB" data-role="B">
         <div class="role-avatar" id="avatarB">
-          <img src="avatars/student-b.jpg" alt="Foreign Client"
-               onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
-          <svg style="display:none" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="22" r="12"/><path d="M20 54c0-6.6 5.4-12 12-12s12 5.4 12 12"/><path d="M26 30c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+          <svg class="avatar-svg" viewBox="0 0 200 240" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="gradB" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#c084fc"/>
+                <stop offset="1" stop-color="#7c3aed"/>
+              </linearGradient>
+            </defs>
+            <rect x="0" y="0" width="200" height="240" rx="22" fill="url(#gradB)"/>
+            <path d="M28 240 C28 176 62 148 100 148 C138 148 172 176 172 240 Z" fill="#fde68a"/>
+            <circle cx="100" cy="90" r="40" fill="#f1c9a5"/>
+            <path d="M58 88 C58 44 142 44 142 88 C150 78 150 60 138 54 C150 46 138 32 124 38 C120 26 100 26 96 38 C84 30 70 40 74 54 C60 56 56 72 58 88 Z" fill="#2b1d12"/>
+            <circle cx="86" cy="90" r="4" fill="#2b2b2b"/>
+            <circle cx="114" cy="90" r="4" fill="#2b2b2b"/>
+            <path d="M86 106 Q100 118 114 106" stroke="#92400e" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <circle cx="100" cy="190" r="13" fill="#22d3ee" opacity="0.92"/>
+            <path d="M87 190 H113 M100 177 V203 M91 183 Q100 190 109 183 M91 197 Q100 190 109 197" stroke="#0e7490" stroke-width="2" fill="none"/>
+          </svg>
         </div>
         <div class="role-name">Foreign Client</div>
       </div>
@@ -639,10 +664,10 @@ html.in-iframe .screen {
           <h3 class="panel-title">对话文本识别</h3>
           <div id="dialogueBox"></div>
         </div>
-        <div class="result-actions">
-          <button class="btn-action" onclick="goPlatform('peer')">全班互评结果</button>
-          <button class="btn-action" onclick="goPlatform('ai')">AI质检报告</button>
-        </div>
+      </div>
+      <div class="result-actions">
+        <button class="btn-action" onclick="goPlatform('peer')">全班互评结果</button>
+        <button class="btn-action" onclick="goPlatform('ai')">AI质检报告</button>
       </div>
       <div class="result-footer">
         <button class="btn-return" onclick="resetToRecord()">返回重新录制</button>

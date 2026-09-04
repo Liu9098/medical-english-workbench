@@ -1366,6 +1366,30 @@ function sendChatMessage() {
 let currentRolePlayTaskId = 1;
 
 function startRolePlay(taskId) {
+  // Task 3：嵌入独立「角色扮演录音大屏工作台」（16:9 大屏、选择小组、demo 模拟模式）
+  if (taskId === 3) {
+    const task = TASKS.find(t => t.id === taskId);
+    const taskColor = task ? task.color : '#3182ce';
+    showModal(`🎙️ 角色扮演录音 — Task 3 报告转述`, `
+      <div style="padding: 4px 0 8px; color: var(--text-secondary); font-size: 13px;">
+        <span class="tag" style="background: ${taskColor}20; color: ${taskColor};">Task 3</span>
+        <span style="margin-left: 8px;">${task ? task.outputType : ''} · 体检报告解读角色扮演</span>
+      </div>
+      <div class="iframe-modal-wrap">
+        <iframe class="iframe-modal-frame" src="task3-recorder/index.html?demo=1&taskId=3" title="角色扮演录音工作台" allow="microphone" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+      <div class="modal-footer" style="padding-top: 8px;">
+        <button class="btn btn-outline" onclick="closeModal()">关闭</button>
+      </div>
+    `);
+    // 使用 16:9 录音专用弹窗样式（宽屏、紧凑边距）
+    const modal = document.querySelector('#modal-overlay .modal');
+    modal.classList.add('modal--recorder');
+    // 右上角添加全屏按钮
+    addTask3FullscreenButton();
+    return;
+  }
+
   const task = TASKS.find(t => t.id === taskId);
   const scenario = ROLE_PLAY_BY_TASK[taskId];
   currentRolePlayTaskId = taskId;
@@ -1436,7 +1460,7 @@ function toggleRecording(btn) {
 function showQRModal(taskId) {
   const task = TASKS.find(t => t.id === taskId);
   if (!task) return;
-  const url = taskId === 3 ? 'https://tranquil-meerkat-9de0a1.netlify.app/' : `https://course.example.com/join?task=${taskId}&class=eng-a`;
+  const url = `https://course.example.com/join?task=${taskId}&class=eng-a`;
 
   showModal(`${task.icon} ${task.name} — 任务二维码`, `
     <div class="qr-display">
@@ -1877,7 +1901,7 @@ function removeTask3FsListener() {
 function closeModal() {
   document.getElementById('modal-overlay').classList.remove('active');
   // 移除放大/全屏弹窗类，避免影响其他弹窗
-  document.querySelector('#modal-overlay .modal')?.classList.remove('modal--wide', 'modal--fs');
+  document.querySelector('#modal-overlay .modal')?.classList.remove('modal--wide', 'modal--fs', 'modal--recorder');
   // 清理全屏监听与按钮
   removeTask3FsListener();
   if (recordTimer) {

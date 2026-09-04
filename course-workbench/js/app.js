@@ -1192,19 +1192,58 @@ function checkSentenceAnswer(selected, correct, explanation) {
 }
 
 // ======== 抽签工具 ========
+// ======== 线上抽签（按任务） ========
 function startLottery() {
-  const names = SAMPLE_STUDENTS.map(s => s.name);
-  let rolling = false;
-  let interval = null;
-
-  showModal('线上抽签', `
-    <div class="lottery-container">
-      <div class="lottery-display" id="lottery-display">点击下方按钮开始抽签</div>
-      <div class="flex gap-8" style="justify-content: center;">
-        <button class="btn btn-primary btn-lg" id="lottery-btn" onclick="rollLottery()">🎰 开始抽签</button>
-        <button class="btn btn-success btn-lg" onclick="rollLottery(5)">👥 抽5人</button>
+  const info = { title: '🎰 线上抽签', desc: '小组 / 情景分组随机抽取' };
+  showModal(info.title, `
+    <div style="padding: 8px;">
+      <div style="text-align: center; padding: 12px 0 20px; color: var(--text-secondary); font-size: 14px;">
+        <div style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">${info.desc}</div>
+        <div>请选择任务，加载对应的分组抽签活动</div>
       </div>
-      <div id="lottery-result" class="mt-16"></div>
+      <div class="task-select-grid">
+        ${TASKS.map(t => `
+          <div class="task-select-card task-${t.id}-color" onclick="loadLotteryForTask(${t.id})">
+            <div class="task-select-icon">${t.icon}</div>
+            <div class="task-select-tag">Task ${t.id}</div>
+            <div class="task-select-name">${t.name}</div>
+            <div class="task-select-output">${t.outputType}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `);
+}
+
+// 加载任务对应的线上抽签内容
+function loadLotteryForTask(taskId) {
+  const task = TASKS.find(t => t.id === taskId);
+  // Task 3：嵌入独立「角色扮演小组抽签」工作台（体检报告解读分组）
+  if (taskId === 3) {
+    const taskColor = task ? task.color : '#3182ce';
+    showModal(`🎰 角色扮演小组抽签 — Task 3 体检报告解读`, `
+      <div style="padding: 4px 0 8px; color: var(--text-secondary); font-size: 13px;">
+        <span class="tag" style="background: ${taskColor}20; color: ${taskColor};">Task 3</span>
+        <span style="margin-left: 8px;">${task ? task.outputType : ''} · 体检报告解读角色扮演分组</span>
+      </div>
+      <div class="iframe-modal-wrap">
+        <iframe class="iframe-modal-frame" src="task3-lottery/index.html" title="角色扮演小组抽签工作台" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+      <div class="modal-footer" style="padding-top: 8px;">
+        <button class="btn btn-outline" onclick="closeModal()">关闭</button>
+      </div>
+    `);
+    const modal = document.querySelector('#modal-overlay .modal');
+    modal.classList.add('modal--recorder');
+    addTask3FullscreenButton();
+    return;
+  }
+  // 其他任务暂未配置分组抽签内容（避免伪造内容）
+  showModal(`🎰 线上抽签 — Task ${taskId}`, `
+    <div style="padding: 48px 20px; text-align: center; color: var(--text-secondary);">
+      <div style="font-size: 40px; margin-bottom: 12px;">🚧</div>
+      <div style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">${task ? task.name : '该任务'} 的分组抽签内容尚未配置</div>
+      <div style="font-size: 14px;">目前仅 Task 3（体检报告解读）提供角色扮演小组抽签活动，其他任务敬请期待。</div>
     </div>
   `);
 }
@@ -1851,6 +1890,18 @@ function addTask3FullscreenButton() {
     return !!(document.fullscreenElement || document.webkitFullscreenElement);
   }
 
+  // 向 iframe 内部添加/移除全屏顶部安全间距类，避免浏览器通知条盖住标题
+  function setIframeFsPadding(on) {
+    try {
+      const frame = document.querySelector('#modal-overlay iframe.iframe-modal-frame');
+      if (frame && frame.contentDocument && frame.contentDocument.documentElement) {
+        frame.contentDocument.documentElement.classList.toggle('fs-safe-top', !!on);
+      }
+    } catch (e) {
+      // 跨域或 iframe 未加载时静默忽略
+    }
+  }
+
   btn.onclick = function() {
     const frame = document.querySelector('#modal-overlay iframe.iframe-modal-frame');
     if (!frame) return;
@@ -1879,9 +1930,11 @@ function addTask3FullscreenButton() {
   task3FsHandler = function() {
     if (isFsActive()) {
       setBtnFullscreen(true);
+      setIframeFsPadding(true);
     } else {
       setBtnFullscreen(false);
       pseudoFullscreen(false);
+      setIframeFsPadding(false);
     }
   };
   document.addEventListener('fullscreenchange', task3FsHandler);

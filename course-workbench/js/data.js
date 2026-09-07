@@ -6,7 +6,7 @@ const COURSE_DATA = {
   name: "高职英语（三）涉外体检职场英语",
   type: "公共英语拓展课程",
   totalHours: 18,
-  taskCount: 6,
+  taskCount: 9,
   methodology: "POA产出导向教学法",
   evaluationScope: "仅评价英语语言交际能力，不评判医学专业知识",
   className: "英语拓展班A班",
@@ -17,8 +17,8 @@ const COURSE_DATA = {
 const TASKS = [
   {
     id: 1,
-    name: "体检接待",
-    fullName: "任务1：涉外体检接待",
+    name: "客户接待",
+    fullName: "任务1：涉外客户接待",
     output: "涉外接待口头交际表达（口头产出）",
     outputType: "口头产出",
     color: "#3182ce",
@@ -36,8 +36,27 @@ const TASKS = [
   },
   {
     id: 2,
+    name: "检前告知",
+    fullName: "任务2：检前告知准备",
+    output: "检前告知与注意事项说明（口头产出）",
+    outputType: "口头产出",
+    color: "#e53e3e",
+    icon: "📢",
+    hours: 3,
+    progress: 70,
+    submitted: 25,
+    pending: 11,
+    keywords: ["pre-check", "fasting", "preparation", "reminder"],
+    templates: {
+      pre: ["词汇闯关：检前准备词汇", "句式游戏：告知与提醒句型", "预习微课：体检前注意事项"],
+      in: ["AI情景口语：检前告知对话", "角色扮演录音：检前指导", "线上抽签：检前情景分组"],
+      post: ["口头产出任务：检前告知录音", "同伴互评：告知表达观测表"]
+    }
+  },
+  {
+    id: 3,
     name: "信息问询",
-    fullName: "任务2：健康信息问询",
+    fullName: "任务3：健康信息问询",
     output: "英文健康信息记录单（表单书面产出）",
     outputType: "表单书面产出",
     color: "#38a169",
@@ -54,9 +73,28 @@ const TASKS = [
     }
   },
   {
-    id: 3,
-    name: "报告转述",
-    fullName: "任务3：体检报告转述",
+    id: 4,
+    name: "流程引导",
+    fullName: "任务4：现场流程引导",
+    output: "现场流程引导与陪同说明（口头产出）",
+    outputType: "口头产出",
+    color: "#5a67d8",
+    icon: "🚶",
+    hours: 3,
+    progress: 55,
+    submitted: 20,
+    pending: 16,
+    keywords: ["guidance", "department", "escort", "queue"],
+    templates: {
+      pre: ["词汇闯关：流程引导词汇", "句式游戏：引导与陪同句型", "预习微课：体检中心科室分布"],
+      in: ["AI情景口语：现场引导对话", "角色扮演录音：陪同引导", "线上抽签：引导情景分组"],
+      post: ["口头产出任务：流程引导模拟录音", "同伴互评：引导表达观测表"]
+    }
+  },
+  {
+    id: 5,
+    name: "报告解读",
+    fullName: "任务5：体检报告解读",
     output: "体检报告口语转述录音（长篇口语产出）",
     outputType: "长篇口语产出",
     color: "#dd6b20",
@@ -73,9 +111,28 @@ const TASKS = [
     }
   },
   {
-    id: 4,
+    id: 6,
+    name: "目标协商",
+    fullName: "任务6：健康目标协商",
+    output: "健康目标协商与行动方案（口头+书面复合产出）",
+    outputType: "协商复合产出",
+    color: "#0ea5e9",
+    icon: "🎯",
+    hours: 3,
+    progress: 50,
+    submitted: 18,
+    pending: 18,
+    keywords: ["goal", "target", "negotiation", "action plan"],
+    templates: {
+      pre: ["词汇闯关：目标协商词汇", "句式游戏：协商与承诺句型", "预习微课：SMART 健康目标"],
+      in: ["AI情景口语：目标协商对话", "角色扮演录音：健康管理师-客户协商", "线上抽签：协商情景分组"],
+      post: ["复合产出任务：健康目标与行动计划", "同伴互评：协商沟通观测表"]
+    }
+  },
+  {
+    id: 7,
     name: "膳食指导",
-    fullName: "任务4：康养膳食指导",
+    fullName: "任务7：康养膳食指导",
     output: "中华康养膳食科普英文海报（翻译+口语复合产出）",
     outputType: "翻译+口语复合产出",
     color: "#805ad5",
@@ -92,9 +149,9 @@ const TASKS = [
     }
   },
   {
-    id: 5,
+    id: 8,
     name: "运动建议",
-    fullName: "任务5：养生运动建议",
+    fullName: "任务8：养生运动建议",
     output: "养生科普英文宣传文案（科普书面产出）",
     outputType: "科普书面产出",
     color: "#319795",
@@ -111,9 +168,9 @@ const TASKS = [
     }
   },
   {
-    id: 6,
-    name: "健康维持",
-    fullName: "任务6：健康随访维持",
+    id: 9,
+    name: "健康随访",
+    fullName: "任务9：健康随访维持",
     output: "外籍客户健康随访英文提醒邮件（正式应用文产出）",
     outputType: "正式应用文产出",
     color: "#d69e2e",
@@ -193,9 +250,9 @@ const AI_QUALITY_CHECK_QUICK = `基于三大评价维度分析以下健康管理
 对话文本：
 【粘贴对话】`;
 
-/* 示例AI质检报告（任务3报告转述） */
+/* 示例AI质检报告（任务5报告解读） */
 const SAMPLE_AI_REPORT = {
-  task: "任务3：体检报告转述",
+  task: "任务5：体检报告解读",
   student: "李明（健康管理师）& Sarah（外籍客户）",
   date: "2025-03-15",
   dimensions: [
@@ -238,31 +295,31 @@ const SAMPLE_AI_REPORT = {
   ]
 };
 
-/* 示例学生数据 */
+/* 示例学生数据（旧 task1-6 成绩迁移到新任务编号：旧2→新3、旧3→新5、旧4→新7、旧5→新8、旧6→新9；新增 T2/T4/T6 暂记 0） */
 const SAMPLE_STUDENTS = [
-  { id: "S001", name: "李明", avatar: "李", task1: 92, task2: 88, task3: 85, task4: 78, task5: 0, task6: 0, total: 68, status: "active", weakness: "中式英语", strength: "口语流利" },
-  { id: "S002", name: "王芳", avatar: "王", task1: 95, task2: 90, task3: 88, task4: 82, task5: 0, task6: 0, total: 71, status: "active", weakness: "词汇量", strength: "语法准确" },
-  { id: "S003", name: "张伟", avatar: "张", task1: 78, task2: 82, task3: 70, task4: 65, task5: 0, task6: 0, total: 58, status: "warning", weakness: "口语紧张", strength: "书面表达" },
-  { id: "S004", name: "刘洋", avatar: "刘", task1: 88, task2: 85, task3: 90, task4: 80, task5: 0, task6: 0, total: 68, status: "active", weakness: "发音", strength: "互动积极" },
-  { id: "S005", name: "陈静", avatar: "陈", task1: 90, task2: 92, task3: 87, task4: 85, task5: 0, task6: 0, total: 70, status: "active", weakness: "语速过快", strength: "词汇丰富" },
-  { id: "S006", name: "赵磊", avatar: "赵", task1: 72, task2: 75, task3: 68, task4: 60, task5: 0, task6: 0, total: 54, status: "warning", weakness: "基础薄弱", strength: "态度认真" },
-  { id: "S007", name: "孙丽", avatar: "孙", task1: 85, task2: 88, task3: 82, task4: 78, task5: 0, task6: 0, total: 66, status: "active", weakness: "听力", strength: "表达清晰" },
-  { id: "S008", name: "周强", avatar: "周", task1: 82, task2: 80, task3: 75, task4: 72, task5: 0, task6: 0, total: 61, status: "active", weakness: "语法", strength: "积极参与" }
+  { id: "S001", name: "李明", avatar: "李", task1: 92, task2: 0, task3: 88, task4: 0, task5: 85, task6: 0, task7: 78, task8: 0, task9: 0, total: 68, status: "active", weakness: "中式英语", strength: "口语流利" },
+  { id: "S002", name: "王芳", avatar: "王", task1: 95, task2: 0, task3: 90, task4: 0, task5: 88, task6: 0, task7: 82, task8: 0, task9: 0, total: 71, status: "active", weakness: "词汇量", strength: "语法准确" },
+  { id: "S003", name: "张伟", avatar: "张", task1: 78, task2: 0, task3: 82, task4: 0, task5: 70, task6: 0, task7: 65, task8: 0, task9: 0, total: 58, status: "warning", weakness: "口语紧张", strength: "书面表达" },
+  { id: "S004", name: "刘洋", avatar: "刘", task1: 88, task2: 0, task3: 85, task4: 0, task5: 90, task6: 0, task7: 80, task8: 0, task9: 0, total: 68, status: "active", weakness: "发音", strength: "互动积极" },
+  { id: "S005", name: "陈静", avatar: "陈", task1: 90, task2: 0, task3: 92, task4: 0, task5: 87, task6: 0, task7: 85, task8: 0, task9: 0, total: 70, status: "active", weakness: "语速过快", strength: "词汇丰富" },
+  { id: "S006", name: "赵磊", avatar: "赵", task1: 72, task2: 0, task3: 75, task4: 0, task5: 68, task6: 0, task7: 60, task8: 0, task9: 0, total: 54, status: "warning", weakness: "基础薄弱", strength: "态度认真" },
+  { id: "S007", name: "孙丽", avatar: "孙", task1: 85, task2: 0, task3: 88, task4: 0, task5: 82, task6: 0, task7: 78, task8: 0, task9: 0, total: 66, status: "active", weakness: "听力", strength: "表达清晰" },
+  { id: "S008", name: "周强", avatar: "周", task1: 82, task2: 0, task3: 80, task4: 0, task5: 75, task6: 0, task7: 72, task8: 0, task9: 0, total: 61, status: "active", weakness: "语法", strength: "积极参与" }
 ];
 
-/* 词汇闯关题库 */
+/* 词汇闯关题库（首页快速版） */
 const VOCAB_QUESTIONS = [
   { word: "blood pressure", phonetic: "/blʌd ˈpreʃər/", options: ["血压", "血糖", "血型", "脉搏"], correct: 0, task: 1 },
-  { word: "cholesterol", phonetic: "/kəˈlestərɒl/", options: ["胆固醇", "甘油三酯", "血红蛋白", "白细胞"], correct: 0, task: 3 },
+  { word: "cholesterol", phonetic: "/kəˈlestərɒl/", options: ["胆固醇", "甘油三酯", "血红蛋白", "白细胞"], correct: 0, task: 5 },
   { word: "registration", phonetic: "/ˌredʒɪˈstreɪʃn/", options: ["挂号", "出院", "转诊", "复诊"], correct: 0, task: 1 },
-  { word: "dietary", phonetic: "/ˈdaɪətəri/", options: ["饮食的", "药物的", "运动的", "心理的"], correct: 0, task: 4 },
-  { word: "follow-up", phonetic: "/ˈfɒləʊ ʌp/", options: ["随访", "急救", "手术", "住院"], correct: 0, task: 6 },
-  { word: "vital signs", phonetic: "/ˈvaɪtl saɪnz/", options: ["生命体征", "过敏史", "家族史", "手术史"], correct: 0, task: 2 },
-  { word: "wellness", phonetic: "/ˈwelnəs/", options: ["健康养生", "疾病治疗", "康复训练", "心理辅导"], correct: 0, task: 5 },
-  { word: "herbal medicine", phonetic: "/ˈhɜːbl ˈmedsn/", options: ["草药", "西药", "疫苗", "抗生素"], correct: 0, task: 4 }
+  { word: "dietary", phonetic: "/ˈdaɪətəri/", options: ["饮食的", "药物的", "运动的", "心理的"], correct: 0, task: 7 },
+  { word: "follow-up", phonetic: "/ˈfɒləʊ ʌp/", options: ["随访", "急救", "手术", "住院"], correct: 0, task: 9 },
+  { word: "vital signs", phonetic: "/ˈvaɪtl saɪnz/", options: ["生命体征", "过敏史", "家族史", "手术史"], correct: 0, task: 3 },
+  { word: "wellness", phonetic: "/ˈwelnəs/", options: ["健康养生", "疾病治疗", "康复训练", "心理辅导"], correct: 0, task: 8 },
+  { word: "herbal medicine", phonetic: "/ˈhɜːbl ˈmedsn/", options: ["草药", "西药", "疫苗", "抗生素"], correct: 0, task: 7 }
 ];
 
-/* 句式游戏题库 */
+/* 句式游戏题库（首页快速版） */
 const SENTENCE_QUESTIONS = [
   {
     scenario: "接待外籍客户时，你想说'请这边走，我先带您去登记处'",
@@ -285,7 +342,7 @@ const SENTENCE_QUESTIONS = [
       "You have high blood pressure problem."
     ],
     correct: 2,
-    task: 3,
+    task: 5,
     explanation: "'slightly above the normal range' 最专业柔和，避免引起恐慌"
   },
   {
@@ -297,7 +354,7 @@ const SENTENCE_QUESTIONS = [
       "Chinese doctor says eat warm things."
     ],
     correct: 1,
-    task: 4,
+    task: 7,
     explanation: "'It might be helpful to...' 语气委婉；'warm-natured foods' 是中医'温性食物'的标准英译"
   }
 ];
@@ -310,12 +367,15 @@ const RESOURCE_CATEGORIES = [
     icon: "📑",
     color: "#3182ce",
     items: [
-      { title: "任务1 体检接待 PPT", type: "PPT", task: 1, desc: "含涉外接待流程、高频句型、情景对话" },
-      { title: "任务2 信息问询 PPT", type: "PPT", task: 2, desc: "英文健康记录单结构、问询技巧" },
-      { title: "任务3 报告转述 PPT", type: "PPT", task: 3, desc: "体检报告口语转述方法与句型支架" },
-      { title: "任务4 膳食指导 PPT", type: "PPT", task: 4, desc: "中华康养膳食文化英译技巧" },
-      { title: "任务5 运动建议 PPT", type: "PPT", task: 5, desc: "科普文案写作规范与范文" },
-      { title: "任务6 健康维持 PPT", type: "PPT", task: 6, desc: "英文随访邮件格式与写作要点" }
+      { title: "任务1 客户接待 PPT", type: "PPT", task: 1, desc: "含涉外接待流程、高频句型、情景对话" },
+      { title: "任务2 检前告知 PPT", type: "PPT", task: 2, desc: "体检前注意事项、空腹与证件准备说明" },
+      { title: "任务3 信息问询 PPT", type: "PPT", task: 3, desc: "英文健康记录单结构、问询技巧" },
+      { title: "任务4 现场引导 PPT", type: "PPT", task: 4, desc: "中心科室分布、陪同引导话术" },
+      { title: "任务5 报告解读 PPT", type: "PPT", task: 5, desc: "体检报告口语转述方法与句型支架" },
+      { title: "任务6 目标协商 PPT", type: "PPT", task: 6, desc: "SMART 健康目标与行动方案制定" },
+      { title: "任务7 膳食指导 PPT", type: "PPT", task: 7, desc: "中华康养膳食文化英译技巧" },
+      { title: "任务8 运动建议 PPT", type: "PPT", task: 8, desc: "科普文案写作规范与范文" },
+      { title: "任务9 健康随访 PPT", type: "PPT", task: 9, desc: "英文随访邮件格式与写作要点" }
     ]
   },
   {
@@ -325,11 +385,14 @@ const RESOURCE_CATEGORIES = [
     color: "#38a169",
     items: [
       { title: "接待引导句型卡", type: "PDF", task: 1, desc: "问候、引导、登记高频句型" },
-      { title: "问询信息句型卡", type: "PDF", task: 2, desc: "个人信息、病史、生活方式问询句型" },
-      { title: "报告转述句型卡", type: "PDF", task: 3, desc: "指标描述、建议给出、安抚句型" },
-      { title: "膳食指导句型卡", type: "PDF", task: 4, desc: "饮食建议、文化解释句型" },
-      { title: "运动建议句型卡", type: "PDF", task: 5, desc: "运动处方、养生科普句型" },
-      { title: "随访邮件句型卡", type: "PDF", task: 6, desc: "邮件开头、提醒、结尾句型" }
+      { title: "检前告知句型卡", type: "PDF", task: 2, desc: "注意事项、提醒告知句型" },
+      { title: "问询信息句型卡", type: "PDF", task: 3, desc: "个人信息、病史、生活方式问询句型" },
+      { title: "现场引导句型卡", type: "PDF", task: 4, desc: "陪同、楼层、叫号引导句型" },
+      { title: "报告解读句型卡", type: "PDF", task: 5, desc: "指标描述、建议给出、安抚句型" },
+      { title: "目标协商句型卡", type: "PDF", task: 6, desc: "目标提议、征询承诺句型" },
+      { title: "膳食指导句型卡", type: "PDF", task: 7, desc: "饮食建议、文化解释句型" },
+      { title: "运动建议句型卡", type: "PDF", task: 8, desc: "运动处方、养生科普句型" },
+      { title: "随访邮件句型卡", type: "PDF", task: 9, desc: "邮件开头、提醒、结尾句型" }
     ]
   },
   {
@@ -338,11 +401,14 @@ const RESOURCE_CATEGORIES = [
     icon: "📝",
     color: "#dd6b20",
     items: [
-      { title: "英文健康信息记录单范本", type: "DOC", task: 2, desc: "完整填写示范，含注释" },
-      { title: "体检报告口语转述范文", type: "DOC", task: 3, desc: "3分钟转述稿范文" },
-      { title: "中华膳食科普海报范文", type: "IMG", task: 4, desc: "含排版设计与英文文案" },
-      { title: "养生科普宣传文案范文", type: "DOC", task: 5, desc: "200词科普短文范文" },
-      { title: "健康随访英文邮件范文", type: "DOC", task: 6, desc: "正式邮件格式范文" }
+      { title: "检前告知说明范文", type: "DOC", task: 2, desc: "检前注意事项告知稿范本" },
+      { title: "英文健康信息记录单范本", type: "DOC", task: 3, desc: "完整填写示范，含注释" },
+      { title: "现场流程引导范文", type: "DOC", task: 4, desc: "陪同引导讲解稿范本" },
+      { title: "体检报告口语转述范文", type: "DOC", task: 5, desc: "3分钟转述稿范文" },
+      { title: "健康目标协商范文", type: "DOC", task: 6, desc: "目标协商与行动计划范本" },
+      { title: "中华膳食科普海报范文", type: "DOC", task: 7, desc: "含排版设计与英文文案" },
+      { title: "养生科普宣传文案范文", type: "DOC", task: 8, desc: "200词科普短文范文" },
+      { title: "健康随访英文邮件范文", type: "DOC", task: 9, desc: "正式邮件格式范文" }
     ]
   },
   {
@@ -374,8 +440,8 @@ const RESOURCE_CATEGORIES = [
     color: "#d69e2e",
     items: [
       { title: "中医养生理念英文表述集", type: "DOC", task: 0, desc: "阴阳、气血、经络等概念标准英译" },
-      { title: "中华膳食文化英译素材", type: "DOC", task: 4, desc: "药食同源、四气五味等文化概念" },
-      { title: "传统运动养生英文介绍", type: "DOC", task: 5, desc: "太极、八段锦等英文科普材料" },
+      { title: "中华膳食文化英译素材", type: "DOC", task: 7, desc: "药食同源、四气五味等文化概念" },
+      { title: "传统运动养生英文介绍", type: "DOC", task: 8, desc: "太极、八段锦等英文科普材料" },
       { title: "中医药文化对外传播案例", type: "DOC", task: 0, desc: "中医药国际传播成功案例" }
     ]
   }
@@ -389,7 +455,7 @@ const CLASS_STATS = {
   totalSubmissions: 134,
   pendingReview: 18,
   avgScore: 68.5,
-  taskCompletion: [89, 78, 61, 44, 22, 0],
+  taskCompletion: [89, 70, 78, 55, 61, 50, 44, 22, 0],
   weaknessDistribution: {
     "中式英语": 12,
     "词汇量不足": 8,
@@ -414,6 +480,14 @@ const VOCAB_BY_TASK = {
     { word: "guide", phonetic: "/ɡaɪd/", options: ["引导", "阻拦", "离开", "等待"], correct: 0 }
   ],
   2: [
+    { word: "fasting", phonetic: "/ˈfɑːstɪŋ/", options: ["空腹", "饱腹", "进食", "饮水"], correct: 0 },
+    { word: "pre-check", phonetic: "/ˈpriː tʃek/", options: ["检前准备", "检后", "复查", "体检"], correct: 0 },
+    { word: "questionnaire", phonetic: "/ˌkwestʃəˈneə(r)/", options: ["问卷", "处方", "报告", "账单"], correct: 0 },
+    { word: "preparation", phonetic: "/ˌprepəˈreɪʃn/", options: ["准备", "恢复", "治疗", "手术"], correct: 0 },
+    { word: "reminder", phonetic: "/rɪˈmaɪndə(r)/", options: ["提醒", "警告", "通知", "建议"], correct: 0 },
+    { word: "appointment", phonetic: "/əˈpɔɪntmənt/", options: ["预约", "急诊", "挂号", "缴费"], correct: 0 }
+  ],
+  3: [
     { word: "vital signs", phonetic: "/ˈvaɪtl saɪnz/", options: ["生命体征", "过敏史", "家族史", "手术史"], correct: 0 },
     { word: "medical history", phonetic: "/ˈmedɪkl ˈhɪstri/", options: ["病史", "体检报告", "化验单", "处方"], correct: 0 },
     { word: "allergy", phonetic: "/ˈælədʒi/", options: ["过敏", "感染", "炎症", "肿瘤"], correct: 0 },
@@ -421,7 +495,15 @@ const VOCAB_BY_TASK = {
     { word: "lifestyle", phonetic: "/ˈlaɪfstaɪl/", options: ["生活方式", "饮食习惯", "运动习惯", "睡眠习惯"], correct: 0 },
     { word: "symptom", phonetic: "/ˈsɪmptəm/", options: ["症状", "病因", "诊断", "治疗"], correct: 0 }
   ],
-  3: [
+  4: [
+    { word: "department", phonetic: "/dɪˈpɑːtmənt/", options: ["科室", "病房", "药房", "前台"], correct: 0 },
+    { word: "waiting area", phonetic: "/ˈweɪtɪŋ ˈeəriə/", options: ["等候区", "手术室", "检查室", "诊室"], correct: 0 },
+    { word: "escort", phonetic: "/ˈeskɔːt/", options: ["陪同引导", "阻拦", "离开", "等待"], correct: 0 },
+    { word: "queue", phonetic: "/kjuː/", options: ["排队", "插队", "离开", "休息"], correct: 0 },
+    { word: "floor", phonetic: "/flɔː(r)/", options: ["楼层", "房间", "电梯", "楼梯"], correct: 0 },
+    { word: "registration desk", phonetic: "/ˌredʒɪˈstreɪʃn desk/", options: ["登记台", "药房", "收费处", "咨询台"], correct: 0 }
+  ],
+  5: [
     { word: "cholesterol", phonetic: "/kəˈlestərɒl/", options: ["胆固醇", "甘油三酯", "血红蛋白", "白细胞"], correct: 0 },
     { word: "within normal range", phonetic: "/wɪˈðɪn ˈnɔːml reɪndʒ/", options: ["在正常范围内", "超出正常", "低于正常", "临界值"], correct: 0 },
     { word: "slightly elevated", phonetic: "/ˈslaɪtli ˈelɪveɪtɪd/", options: ["轻微偏高", "严重偏高", "正常", "下降"], correct: 0 },
@@ -429,7 +511,15 @@ const VOCAB_BY_TASK = {
     { word: "indication", phonetic: "/ˌɪndɪˈkeɪʃn/", options: ["指标", "症状", "诊断", "处方"], correct: 0 },
     { word: "comprehensive", phonetic: "/ˌkɒmprɪˈhensɪv/", options: ["全面的", "部分的", "特定的", "初步的"], correct: 0 }
   ],
-  4: [
+  6: [
+    { word: "goal", phonetic: "/ɡəʊl/", options: ["目标", "问题", "症状", "诊断"], correct: 0 },
+    { word: "target", phonetic: "/ˈtɑːɡɪt/", options: ["目标值", "指标", "限值", "范围"], correct: 0 },
+    { word: "negotiate", phonetic: "/nɪˈɡəʊʃieɪt/", options: ["协商", "命令", "拒绝", "忽视"], correct: 0 },
+    { word: "commitment", phonetic: "/kəˈmɪtmənt/", options: ["承诺", "犹豫", "放弃", "拖延"], correct: 0 },
+    { word: "action plan", phonetic: "/ˈækʃn plæn/", options: ["行动方案", "随意计划", "空想", "等待"], correct: 0 },
+    { word: "follow-up", phonetic: "/ˈfɒləʊ ʌp/", options: ["随访", "急救", "手术", "住院"], correct: 0 }
+  ],
+  7: [
     { word: "dietary", phonetic: "/ˈdaɪətəri/", options: ["饮食的", "药物的", "运动的", "心理的"], correct: 0 },
     { word: "herbal medicine", phonetic: "/ˈhɜːbl ˈmedsn/", options: ["草药/中药", "西药", "疫苗", "抗生素"], correct: 0 },
     { word: "warm-natured", phonetic: "/wɔːm ˈneɪtʃəd/", options: ["温性的", "寒性的", "平性的", "热性的"], correct: 0 },
@@ -437,7 +527,7 @@ const VOCAB_BY_TASK = {
     { word: "nutrition", phonetic: "/njuˈtrɪʃn/", options: ["营养", "水分", "纤维", "热量"], correct: 0 },
     { word: "dampness", phonetic: "/ˈdæmpnəs/", options: ["湿气", "寒气", "热气", "火气"], correct: 0 }
   ],
-  5: [
+  8: [
     { word: "wellness", phonetic: "/ˈwelnəs/", options: ["健康养生", "疾病治疗", "康复训练", "心理辅导"], correct: 0 },
     { word: "moderate exercise", phonetic: "/ˈmɒdərət ˈeksəsaɪz/", options: ["适度运动", "剧烈运动", "静态拉伸", "力量训练"], correct: 0 },
     { word: "aerobics", phonetic: "/eəˈrəʊbɪks/", options: ["有氧运动", "无氧运动", "伸展运动", "平衡训练"], correct: 0 },
@@ -445,7 +535,7 @@ const VOCAB_BY_TASK = {
     { word: "endurance", phonetic: "/ɪnˈdjʊərəns/", options: ["耐力", "速度", "力量", "柔韧"], correct: 0 },
     { word: "Baduanjin", phonetic: "/bɑːˈdwɑːndʒɪn/", options: ["八段锦", "五禽戏", "易筋经", "六字诀"], correct: 0 }
   ],
-  6: [
+  9: [
     { word: "follow-up", phonetic: "/ˈfɒləʊ ʌp/", options: ["随访", "急救", "手术", "住院"], correct: 0 },
     { word: "reminder", phonetic: "/rɪˈmaɪndər/", options: ["提醒", "通知", "警告", "建议"], correct: 0 },
     { word: "appointment", phonetic: "/əˈpɔɪntmənt/", options: ["预约", "急诊", "挂号", "缴费"], correct: 0 },
@@ -494,6 +584,41 @@ const SENTENCES_BY_TASK = {
   ],
   2: [
     {
+      scenario: "告知客户体检前需空腹，最地道的说法是",
+      options: [
+        "You must not eat 8 hours before.",
+        "Please refrain from eating or drinking for 8 hours before the check-up.",
+        "Don't eat, OK?",
+        "No food before test."
+      ],
+      correct: 1,
+      explanation: "'refrain from eating or drinking' 正式礼貌；说明时长清晰"
+    },
+    {
+      scenario: "提醒客户携带证件与预约单，想说'请携带您的身份证件和预约单'",
+      options: [
+        "Bring your card and paper.",
+        "Please bring your ID and appointment slip with you.",
+        "You take ID.",
+        "Card and paper needed."
+      ],
+      correct: 1,
+      explanation: "'appointment slip' 预约单；'with you' 自然"
+    },
+    {
+      scenario: "告知体检流程，想说'我先帮您登记，再引导您到各科室'",
+      options: [
+        "I register you then go.",
+        "Let me help you register first, then guide you to each department.",
+        "You register, then follow.",
+        "Register and go departments."
+      ],
+      correct: 1,
+      explanation: "'help you register' 服务用语；'each department' 各科室"
+    }
+  ],
+  3: [
+    {
       scenario: "询问客户是否有药物过敏时，最地道的表达是",
       options: [
         "You have medicine allergy?",
@@ -527,7 +652,42 @@ const SENTENCES_BY_TASK = {
       explanation: "'family history of...' 是医学专业表达"
     }
   ],
-  3: [
+  4: [
+    {
+      scenario: "引导客户到抽血室，最地道的说法是",
+      options: [
+        "You go blood room.",
+        "This way, please. I'll walk you to the blood draw room.",
+        "Blood room there.",
+        "Follow to blood."
+      ],
+      correct: 1,
+      explanation: "'walk you to' 陪同引导；'blood draw room' 专业"
+    },
+    {
+      scenario: "请客户在等候区稍候，想说'请在此等候，医生会叫号'",
+      options: [
+        "Wait here.",
+        "Please wait in the waiting area. The doctor will call your number.",
+        "You sit.",
+        "Wait, doctor call."
+      ],
+      correct: 1,
+      explanation: "'waiting area' 等候区；'call your number' 叫号"
+    },
+    {
+      scenario: "说明楼层分布，想说'超声检查在3楼，我带您乘电梯'",
+      options: [
+        "Ultrasound is floor 3, elevator.",
+        "The ultrasound is on the 3rd floor. Let me take you up by elevator.",
+        "3 floor ultrasound.",
+        "Go 3rd floor."
+      ],
+      correct: 1,
+      explanation: "'on the 3rd floor'；'take you up by elevator' 陪同"
+    }
+  ],
+  5: [
     {
       scenario: "转述体检报告时，你想说'您的血压稍微偏高'",
       options: [
@@ -562,7 +722,42 @@ const SENTENCES_BY_TASK = {
       explanation: "'There's no need to worry' 比 'Don't worry' 更柔和；'manageable with proper care' 专业"
     }
   ],
-  4: [
+  6: [
+    {
+      scenario: "与客户协商减重目标，最委婉的说法是",
+      options: [
+        "You must lose 5kg.",
+        "Shall we aim for a 5 kg weight loss over three months?",
+        "Lose 5kg now.",
+        "You need 5kg less."
+      ],
+      correct: 1,
+      explanation: "'Shall we aim for...' 协商语气；给出时间框架"
+    },
+    {
+      scenario: "确认客户承诺，想说'您愿意每周运动三次吗？'",
+      options: [
+        "You exercise three times.",
+        "Would you be willing to exercise three times a week?",
+        "Exercise 3 times.",
+        "Three times exercise."
+      ],
+      correct: 1,
+      explanation: "'Would you be willing to...' 征询承诺，尊重客户"
+    },
+    {
+      scenario: "制定行动方案，想说'我们把它写进健康行动计划'",
+      options: [
+        "Write in plan.",
+        "Let's put it into your health action plan.",
+        "Plan it.",
+        "Action plan write."
+      ],
+      correct: 1,
+      explanation: "'put it into your action plan' 正式落地"
+    }
+  ],
+  7: [
     {
       scenario: "给膳食建议时，想说'建议您多吃些温性食物'",
       options: [
@@ -597,7 +792,7 @@ const SENTENCES_BY_TASK = {
       explanation: "'might want to' 建议性弱，礼貌度高；'reduce intake of' 比 'stop' 更易接受"
     }
   ],
-  5: [
+  8: [
     {
       scenario: "推荐运动时，想说'建议您每周进行3-5次适度运动'",
       options: [
@@ -632,7 +827,7 @@ const SENTENCES_BY_TASK = {
       explanation: "'stay hydrated' 健身专业表达；'workout' 比 'exercise' 更口语化亲切"
     }
   ],
-  6: [
+  9: [
     {
       scenario: "撰写随访邮件开头，最地道的表达是",
       options: [
@@ -685,6 +880,19 @@ const ROLE_PLAY_BY_TASK = {
     ]
   },
   2: {
+    title: "检前告知模拟",
+    scene: "健康管理中心咨询台",
+    roleA: "健康管理师（学生）",
+    roleB: "外籍客户 Tom（首次体检，对流程不熟悉）",
+    duration: "2-3 分钟",
+    requirements: [
+      "核对预约信息，确认客户身份",
+      "说明体检前注意事项（空腹、携带证件等）",
+      "告知整体流程与时长",
+      "使用 'Please remember to...' 'Make sure you...' 等提醒句型"
+    ]
+  },
+  3: {
     title: "健康信息问询模拟",
     scene: "健康管理师办公室",
     roleA: "健康管理师（学生）",
@@ -697,8 +905,21 @@ const ROLE_PLAY_BY_TASK = {
       "使用 'Do you have any history of...?' 'How often do you...?' 等句型"
     ]
   },
-  3: {
-    title: "体检报告转述模拟",
+  4: {
+    title: "现场流程引导模拟",
+    scene: "体检中心各楼层",
+    roleA: "导诊健康管理师（学生）",
+    roleB: "外籍客户 Mary（需要陪同引导）",
+    duration: "3-5 分钟",
+    requirements: [
+      "根据检查项目引导至对应科室",
+      "说明等候与叫号规则",
+      "使用电梯/楼梯引导",
+      "使用 'This way, please' 'The X is on...' 等引导句型"
+    ]
+  },
+  5: {
+    title: "体检报告解读模拟",
     scene: "健康管理咨询室",
     roleA: "健康管理师（学生）",
     roleB: "外籍客户 Sarah（来自加拿大，体检完成）",
@@ -710,7 +931,20 @@ const ROLE_PLAY_BY_TASK = {
       "尝试融入中华康养文化元素（如食疗、太极）"
     ]
   },
-  4: {
+  6: {
+    title: "健康目标协商模拟",
+    scene: "健康管理咨询室",
+    roleA: "健康管理师（学生）",
+    roleB: "外籍客户 Sarah（体检后希望制定改善计划）",
+    duration: "3-5 分钟",
+    requirements: [
+      "结合报告结果与客户协商可行目标",
+      "确认客户意愿与承诺",
+      "制定阶段性行动方案",
+      "使用 'Shall we...' 'Would you be willing to...' 等协商句型"
+    ]
+  },
+  7: {
     title: "康养膳食指导模拟",
     scene: "营养咨询室",
     roleA: "健康管理师（学生）",
@@ -723,7 +957,7 @@ const ROLE_PLAY_BY_TASK = {
       "给出可操作的饮食方案"
     ]
   },
-  5: {
+  8: {
     title: "运动建议咨询模拟",
     scene: "运动指导室",
     roleA: "健康管理师（学生）",
@@ -736,7 +970,7 @@ const ROLE_PLAY_BY_TASK = {
       "融入中华传统运动养生理念"
     ]
   },
-  6: {
+  9: {
     title: "健康随访模拟",
     scene: "电话/视频随访",
     roleA: "健康管理师（学生）",
@@ -764,6 +998,16 @@ const AI_DIALOG_BY_TASK = {
     ]
   },
   2: {
+    title: "AI情景口语 — 检前告知",
+    setting: "外籍客户 Tom 首次体检，对检前准备不清楚。请用英语向他说明注意事项。",
+    opening: "Hi, it's my first time here. What should I do before the check-up?",
+    scaffolds: [
+      "Please refrain from eating or drinking for 8 hours before the check-up.",
+      "Make sure to bring your ID and appointment slip with you.",
+      "I'll help you with the registration first."
+    ]
+  },
+  3: {
     title: "AI情景口语 — 健康问询",
     setting: "你正在为外籍客户 Mary 做健康信息登记，她 40 岁，来自美国。请采集她的健康信息。",
     opening: "Hi, I'm Mary. The nurse said I need to fill in some forms before the check-up?",
@@ -773,8 +1017,18 @@ const AI_DIALOG_BY_TASK = {
       "Are you allergic to any medications or foods?"
     ]
   },
-  3: {
-    title: "AI情景口语 — 报告转述",
+  4: {
+    title: "AI情景口语 — 现场引导",
+    setting: "外籍客户 Mary 需要在中心内走动完成多项检查，请用英语引导她。",
+    opening: "Where should I go for the blood test?",
+    scaffolds: [
+      "This way, please. I'll walk you to the blood draw room.",
+      "The ultrasound is on the 3rd floor — let me take you up by elevator.",
+      "Please wait in the waiting area until your number is called."
+    ]
+  },
+  5: {
+    title: "AI情景口语 — 报告解读",
     setting: "外籍客户 Sarah 刚做完体检，正在等待报告解读。请用英语向她转述体检结果。",
     opening: "Hi, I'm Sarah. Could you tell me about my results?",
     scaffolds: [
@@ -783,7 +1037,17 @@ const AI_DIALOG_BY_TASK = {
       "I'd suggest some dietary adjustments and regular exercise."
     ]
   },
-  4: {
+  6: {
+    title: "AI情景口语 — 目标协商",
+    setting: "外籍客户 Sarah 体检后希望制定健康改善目标，请用英语与她协商。",
+    opening: "My report shows high cholesterol. What should I do?",
+    scaffolds: [
+      "Shall we aim for a 5 kg weight loss over three months?",
+      "Would you be willing to exercise three times a week?",
+      "Let's put it into your health action plan."
+    ]
+  },
+  7: {
     title: "AI情景口语 — 膳食指导",
     setting: "外籍客户 David 对中医感兴趣，希望了解中华康养膳食建议。请用英语为他提供指导。",
     opening: "I've heard a lot about Chinese dietary therapy. Could you give me some advice based on my body type?",
@@ -793,7 +1057,7 @@ const AI_DIALOG_BY_TASK = {
       "For example, ginger tea in the morning can help improve your circulation."
     ]
   },
-  5: {
+  8: {
     title: "AI情景口语 — 运动建议",
     setting: "外籍客户 Lisa 是久坐白领，想了解适合的运动方案。请用英语为她推荐。",
     opening: "I sit at a desk all day and feel tired. What kind of exercise would you suggest?",
@@ -803,7 +1067,7 @@ const AI_DIALOG_BY_TASK = {
       "Even a 30-minute walk during lunch break can make a big difference."
     ]
   },
-  6: {
+  9: {
     title: "AI情景口语 — 健康随访",
     setting: "你正在对 3 个月前体检的外籍客户 James 进行电话随访，了解他的健康改善情况。",
     opening: "Hello, this is James. I received your email about the follow-up.",
@@ -818,7 +1082,7 @@ const AI_DIALOG_BY_TASK = {
 /* AI质检报告（按任务分类） */
 const AI_REPORTS_BY_TASK = {
   1: {
-    task: "任务1：体检接待",
+    task: "任务1：客户接待",
     student: "王芳 & Tom（外籍客户）",
     date: "2025-03-08",
     dimensions: [
@@ -841,7 +1105,30 @@ const AI_REPORTS_BY_TASK = {
     ]
   },
   2: {
-    task: "任务2：信息问询",
+    task: "任务2：检前告知",
+    student: "王芳 & Tom（外籍客户）",
+    date: "2025-03-10",
+    dimensions: [
+      { name: "指标柔和专业表达", icon: "📊", class: "dim-1" },
+      { name: "人文共情问诊沟通", icon: "💝", class: "dim-2" },
+      { name: "自然传播中式康养文化", icon: "🌿", class: "dim-3" }
+    ],
+    highlights: [
+      "使用 'Please refrain from...' 清晰说明空腹要求",
+      "主动提醒携带证件，体现服务意识",
+      "引导登记用语 'Let me help you register first' 自然"
+    ],
+    optimizations: [
+      { original: "You no eat before test.", issue: "缺主语、时态错误；'no eat' 中式英语" },
+      { original: "Bring your card quick.", issue: "'quick' 副词误用；缺少礼貌用语" }
+    ],
+    replacements: [
+      { sentence: "Please refrain from eating or drinking for 8 hours before the check-up.", note: "'refrain from' 正式礼貌" },
+      { sentence: "Please have your ID and appointment slip ready. Thank you.", note: "'have...ready' 自然；'Thank you' 收尾礼貌" }
+    ]
+  },
+  3: {
+    task: "任务3：信息问询",
     student: "陈静 & Mary（外籍客户）",
     date: "2025-03-15",
     dimensions: [
@@ -863,9 +1150,55 @@ const AI_REPORTS_BY_TASK = {
       { sentence: "How many years have you been smoking?", note: "完成时表达'已经吸烟多少年'；'how many years' 时间表达正确" }
     ]
   },
-  3: SAMPLE_AI_REPORT,  // 复用原有示例
   4: {
-    task: "任务4：膳食指导",
+    task: "任务4：现场引导",
+    student: "刘洋 & Mary（外籍客户）",
+    date: "2025-04-05",
+    dimensions: [
+      { name: "指标柔和专业表达", icon: "📊", class: "dim-1" },
+      { name: "人文共情问诊沟通", icon: "💝", class: "dim-2" },
+      { name: "自然传播中式康养文化", icon: "🌿", class: "dim-3" }
+    ],
+    highlights: [
+      "使用 'This way, please' 礼貌引导",
+      "说明楼层 'on the 3rd floor' 准确",
+      "陪同用语 'I'll walk you to...' 体现服务"
+    ],
+    optimizations: [
+      { original: "Blood room there, go.", issue: "句子破碎，缺少引导动词" },
+      { original: "You wait, doctor call you.", issue: "主谓缺失；'call you' 不完整" }
+    ],
+    replacements: [
+      { sentence: "This way, please. I'll walk you to the blood draw room.", note: "陪同引导标准表达" },
+      { sentence: "Please wait in the waiting area. The doctor will call your number.", note: "'call your number' 叫号专业表达" }
+    ]
+  },
+  5: SAMPLE_AI_REPORT,  // 复用原有示例（任务5 报告解读）
+  6: {
+    task: "任务6：目标协商",
+    student: "李明 & Sarah（外籍客户）",
+    date: "2025-05-12",
+    dimensions: [
+      { name: "指标柔和专业表达", icon: "📊", class: "dim-1" },
+      { name: "人文共情问诊沟通", icon: "💝", class: "dim-2" },
+      { name: "自然传播中式康养文化", icon: "🌿", class: "dim-3" }
+    ],
+    highlights: [
+      "使用 'Shall we aim for...' 协商语气柔和",
+      "征询承诺 'Would you be willing to...' 尊重客户",
+      "落地 'put it into your action plan' 具体"
+    ],
+    optimizations: [
+      { original: "You must lose 5kg.", issue: "'must' 指令性过强，易引起抵触" },
+      { original: "Do exercise three times.", issue: "祈使句生硬；缺少协商语气" }
+    ],
+    replacements: [
+      { sentence: "Shall we aim for a 5 kg weight loss over three months?", note: "'Shall we...' 协商式提议" },
+      { sentence: "Would you be willing to exercise three times a week?", note: "征询意愿，体现尊重" }
+    ]
+  },
+  7: {
+    task: "任务7：膳食指导",
     student: "刘洋 & David（外籍客户）",
     date: "2025-04-10",
     dimensions: [
@@ -887,8 +1220,8 @@ const AI_REPORTS_BY_TASK = {
       { sentence: "Your vital energy (qi) might benefit from some lifestyle adjustments such as gentle exercise and proper rest.", note: "'vital energy (qi)' 拼音加英文解释；'might benefit from' 委婉；'lifestyle adjustments' 给具体建议" }
     ]
   },
-  5: {
-    task: "任务5：运动建议",
+  8: {
+    task: "任务8：运动建议",
     student: "孙丽 & Lisa（外籍客户）",
     date: "2025-04-22",
     dimensions: [
@@ -910,8 +1243,8 @@ const AI_REPORTS_BY_TASK = {
       { sentence: "We'd recommend engaging in moderate exercise most days of the week, even a 30-minute walk can be beneficial.", note: "'We'd recommend' 委婉；'most days' 比 'every day' 更实际；'30-minute walk' 具体可操作" }
     ]
   },
-  6: {
-    task: "任务6：健康随访",
+  9: {
+    task: "任务9：健康随访",
     student: "李明 & James（外籍客户）",
     date: "2025-05-08",
     dimensions: [

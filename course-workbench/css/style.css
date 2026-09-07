@@ -39,11 +39,14 @@
 
 /* Task-specific colors */
 .task-1-color { --task-color: #3182ce; }
-.task-2-color { --task-color: #38a169; }
-.task-3-color { --task-color: #dd6b20; }
-.task-4-color { --task-color: #805ad5; }
-.task-5-color { --task-color: #319795; }
-.task-6-color { --task-color: #d69e2e; }
+.task-2-color { --task-color: #e53e3e; }
+.task-3-color { --task-color: #38a169; }
+.task-4-color { --task-color: #5a67d8; }
+.task-5-color { --task-color: #dd6b20; }
+.task-6-color { --task-color: #0ea5e9; }
+.task-7-color { --task-color: #805ad5; }
+.task-8-color { --task-color: #319795; }
+.task-9-color { --task-color: #d69e2e; }
 
 * {
   margin: 0;

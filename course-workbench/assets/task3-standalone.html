@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Task 3 报告转述 · 学情诊断（单文件版）</title>
+  <title>Task 5 报告解读 · 学情诊断（单文件版）</title>
   <style>
 /* =========================================================
    学情诊断系统 — 统一视觉规范（单文件内联）
@@ -230,14 +230,14 @@ html, body {
     </div>
   </div>
 
-  <!-- ============ Task 3 报告详情 ============ -->
+  <!-- ============ Task 5 报告详情 ============ -->
   <div class="report-wrap" id="report" style="display:none">
     <div class="topbar">
       <button class="btn btn--ghost" onclick="goHome()">◀ 返回主页</button>
       <button class="btn btn--primary" onclick="openAnalysis()">📊 学情分析</button>
     </div>
     <div class="report-head">
-      <h1 id="rTitle">Task 3 体检报告转述・角色扮演评价表</h1>
+      <h1 id="rTitle">Task 5 报告解读・角色扮演评价表</h1>
       <div class="sub-en" id="rEn">Peer-Assessment Checklist</div>
       <div class="sub-cn" id="rCn">学生互评表 — 角色扮演</div>
       <div class="participate">✅ 共 <span id="rTotal">24</span> 名学生完成评价</div>
@@ -252,7 +252,7 @@ html, body {
     <div class="modal modal--wide">
       <div class="modal__head">
         <div class="ic">📈</div>
-        <h3>Task 3 学情可视化诊断</h3>
+        <h3>Task 5 学情可视化诊断</h3>
         <button class="fs" id="fsBtn" onclick="toggleFS()" title="进入全屏（适配课堂大屏展示）">⛶</button>
         <button class="x" onclick="closeAnalysis()">×</button>
       </div>
@@ -299,7 +299,7 @@ html, body {
     { id: 6, tag: 'Task 6', name: '健康维持',   en: 'Wellness Maintenance',  icon: '💡', cls: 't-gold',   output: '口头产出', ready: false },
   ];
   const TASK3 = {
-    title: 'Task 3 体检报告转述・角色扮演评价表',
+    title: 'Task 5 报告解读・角色扮演评价表',
     titleEn: 'Peer-Assessment Checklist of Role-play',
     subtitleCn: '学生互评表 — 角色扮演',
     total: 24,
@@ -543,12 +543,12 @@ html, body {
   radStyle.textContent = '.radar-data{opacity:0;transition:opacity .8s ease .15s;}';
   document.head.appendChild(radStyle);
   
-  /* Auto-open Task 3 report when embedded via iframe (?task=3) */
+  /* Auto-open report when embedded via iframe (?task=3 or ?task=5) */
   (function () {
     try {
       var q = new URLSearchParams(location.search);
       var h = (location.hash || '').replace('#', '');
-      if (q.get('task') === '3' || h === 'task3' || q.get('report') === '1') openReport();
+      if (q.get('task') === '3' || q.get('task') === '5' || h === 'task3' || h === 'task5' || q.get('report') === '1') openReport();
     } catch (e) {}
   })();
 </script>

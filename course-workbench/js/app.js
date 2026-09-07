@@ -97,11 +97,11 @@ function renderOverview(container) {
       </div>
     </div>
 
-    <!-- 6任务进度看板 -->
+    <!-- 9任务进度看板 -->
     <div class="card mb-24">
       <div class="card-title">
         <div class="title-icon" style="background: #ebf8ff; color: var(--accent-blue)">📋</div>
-        六大任务进度看板
+        九大任务进度看板
       </div>
       <div class="task-board">
         ${TASKS.map(t => `
@@ -140,7 +140,7 @@ function renderOverview(container) {
               <tr>
                 <td>${s.id}</td>
                 <td>${s.name}</td>
-                <td>${[s.task1, s.task2, s.task3, s.task4].filter(v => v > 0).length}/6</td>
+                <td>${TASKS.filter(t => (s['task'+t.id]||0) > 0).length}/${TASKS.length}</td>
                 <td><span class="tag ${s.status === 'active' ? 'tag-green' : 'tag-orange'}">${s.status === 'active' ? '活跃' : '需关注'}</span></td>
                 <td>${s.weakness}</td>
               </tr>
@@ -421,7 +421,7 @@ function switchReviewTab(tab) {
 
 // ======== 4. 学情数据中心（八按钮枢纽页） ========
 // Task 3 报告解读 嵌入的看板地址（部署成公网后替换此常量即可）
-const DASHBOARD_URL = 'assets/task3-standalone.html?task=3';
+const DASHBOARD_URL = 'assets/task3-standalone.html?task=5';
 
 function renderDataCenter(container) {
   container.innerHTML = `
@@ -431,8 +431,8 @@ function renderDataCenter(container) {
         学情数据中心 · 请选择查看入口
       </div>
 
-      <!-- 六个任务数据入口 -->
-      <div class="grid-6 mb-24">
+      <!-- 九个任务数据入口 -->
+      <div class="grid-3 mb-24">
         ${TASKS.map(t => `
           <div class="task-mini-card task-${t.id}-color" onclick="renderTaskDashboard(${t.id})">
             <div class="task-mini-icon">${t.icon}</div>
@@ -459,14 +459,14 @@ function renderDataCenter(container) {
   `;
 }
 
-// ======== 4.1 单任务学情视图（Task 3 嵌入报告解读看板） ========
+// ======== 4.1 单任务学情视图（Task 5 嵌入报告解读看板） ========
 function renderTaskDashboard(taskId) {
   const task = TASKS.find(t => t.id === taskId);
   if (!task) return;
 
-  if (taskId === 3) {
-    // Task 3 报告转述：嵌入本地看板
-    showModal(`📊 Task 3 ${task.name} · 报告解读看板`, `
+  if (taskId === 5) {
+    // Task 5 报告解读：嵌入本地看板
+    showModal(`📊 Task 5 ${task.name} · 报告解读看板`, `
       <div class="iframe-modal-wrap">
         <iframe class="iframe-modal-frame" src="${DASHBOARD_URL}" allow="microphone; camera; fullscreen" referrerpolicy="no-referrer-when-downgrade"></iframe>
       </div>
@@ -653,14 +653,11 @@ function renderStudentProfile() {
   if (!student) return;
 
   const area = document.getElementById('student-profile-area');
-  const taskScores = [
-    { name: '体检接待', score: student.task1, color: '#3182ce' },
-    { name: '信息问询', score: student.task2, color: '#38a169' },
-    { name: '报告转述', score: student.task3, color: '#dd6b20' },
-    { name: '膳食指导', score: student.task4, color: '#805ad5' },
-    { name: '运动建议', score: student.task5, color: '#319795' },
-    { name: '健康维持', score: student.task6, color: '#d69e2e' }
-  ];
+  const taskScores = TASKS.map(t => ({
+    name: t.name,
+    score: student['task' + t.id] || 0,
+    color: t.color
+  }));
   const completed = taskScores.filter(t => t.score > 0).length;
   const avgScore = completed > 0 ? Math.round(taskScores.filter(t => t.score > 0).reduce((a, b) => a + b.score, 0) / completed) : 0;
 
@@ -713,7 +710,7 @@ function renderStudentProfile() {
 function renderResources(container) {
   container.innerHTML = `
     <div class="flex-between mb-16">
-      <div class="text-sm text-tertiary">按6个任务分类存储 · 支持上传、下载、复用</div>
+      <div class="text-sm text-tertiary">按9个任务分类存储 · 支持上传、下载、复用</div>
       <button class="btn btn-primary btn-sm" onclick="showToast('上传功能')">📤 上传素材</button>
     </div>
 
@@ -776,29 +773,19 @@ function renderGrades(container) {
         <thead>
           <tr>
             <th>学号</th><th>姓名</th>
-            <th>任务1<br><span class="text-sm text-tertiary">接待</span></th>
-            <th>任务2<br><span class="text-sm text-tertiary">问询</span></th>
-            <th>任务3<br><span class="text-sm text-tertiary">转述</span></th>
-            <th>任务4<br><span class="text-sm text-tertiary">膳食</span></th>
-            <th>任务5<br><span class="text-sm text-tertiary">运动</span></th>
-            <th>任务6<br><span class="text-sm text-tertiary">随访</span></th>
+            ${TASKS.map(t => `<th>任务${t.id}<br><span class="text-sm text-tertiary">${t.name}</span></th>`).join('')}
             <th>过程总分</th>
             <th>状态</th>
           </tr>
         </thead>
         <tbody>
           ${SAMPLE_STUDENTS.map(s => {
-            const total = Math.round((s.task1 + s.task2 + s.task3 + s.task4 + s.task5 + s.task6) / 6 * 0.9);
+            const total = Math.round(TASKS.reduce((a, t) => a + (s['task' + t.id] || 0), 0) / TASKS.length * 0.9);
             return `
               <tr>
                 <td>${s.id}</td>
                 <td><strong>${s.name}</strong></td>
-                <td>${s.task1 || '-'}</td>
-                <td>${s.task2 || '-'}</td>
-                <td>${s.task3 || '-'}</td>
-                <td>${s.task4 || '-'}</td>
-                <td>${s.task5 || '-'}</td>
-                <td>${s.task6 || '-'}</td>
+                ${TASKS.map(t => `<td>${s['task' + t.id] || '-'}</td>`).join('')}
                 <td><strong style="color: var(--accent-blue)">${total}</strong></td>
                 <td>
                   <span class="tag ${s.status === 'active' ? 'tag-green' : 'tag-orange'}">
@@ -831,7 +818,7 @@ function renderGrades(container) {
 function generateComments() {
   const area = document.getElementById('comments-area');
   area.innerHTML = SAMPLE_STUDENTS.map(s => {
-    const total = Math.round((s.task1 + s.task2 + s.task3 + s.task4) / 4);
+    const total = Math.round(TASKS.reduce((a, t) => a + (s['task' + t.id] || 0), 0) / TASKS.length);
     const comment = s.status === 'active'
       ? `${s.name}同学本阶段表现积极，${s.strength}方面尤为突出。建议在${s.weakness}方面继续加强练习，保持良好势头。`
       : `${s.name}同学需加强学习投入，${s.weakness}是目前主要短板。建议利用课前预习和课后练习时间多加巩固基础，教师将提供针对性辅导。`;
@@ -860,17 +847,17 @@ function renderToolkit(container) {
       <div class="tool-card" onclick="showToolWithTaskSelector('vocab')">
         <div class="tool-icon">🔤</div>
         <div class="tool-name">词汇闯关</div>
-        <div class="tool-desc">六大任务高频词汇挑战</div>
+        <div class="tool-desc">九大任务高频词汇挑战</div>
       </div>
       <div class="tool-card" onclick="showToolWithTaskSelector('sentence')">
         <div class="tool-icon">📝</div>
         <div class="tool-name">句式游戏</div>
-        <div class="tool-desc">六大任务岗位场景句型</div>
+        <div class="tool-desc">九大任务岗位场景句型</div>
       </div>
       <div class="tool-card" onclick="showToolWithTaskSelector('ai_dialog')">
         <div class="tool-icon">🎭</div>
         <div class="tool-name">AI情景口语</div>
-        <div class="tool-desc">六大任务虚拟外籍客户对话</div>
+        <div class="tool-desc">九大任务虚拟外籍客户对话</div>
       </div>
       <div class="tool-card" onclick="startLottery()">
         <div class="tool-icon">🎰</div>
@@ -885,12 +872,12 @@ function renderToolkit(container) {
       <div class="tool-card" onclick="showToolWithTaskSelector('ai_report')">
         <div class="tool-icon">🤖</div>
         <div class="tool-name">质检报告生成</div>
-        <div class="tool-desc">六大任务AI质检报告</div>
+        <div class="tool-desc">九大任务AI质检报告</div>
       </div>
       <div class="tool-card" onclick="showToolWithTaskSelector('role_play')">
         <div class="tool-icon">🎬</div>
         <div class="tool-name">角色扮演录音</div>
-        <div class="tool-desc">六大任务情景模拟</div>
+        <div class="tool-desc">九大任务情景模拟</div>
       </div>
       <div class="tool-card" onclick="startTimer()">
         <div class="tool-icon">⏱️</div>
@@ -905,7 +892,7 @@ function renderToolkit(container) {
     </div>
 
     <div style="padding: 20px; background: var(--bg-tertiary); border-radius: var(--radius-md); text-align: center; color: var(--text-tertiary); font-size: 14px;">
-      💡 点击上方任一工具按钮 → 选择对应的任务（Task 1-6）→ 加载该任务下的课堂活动
+      💡 点击上方任一工具按钮 → 选择对应的任务（Task 1-9）→ 加载该任务下的课堂活动
     </div>
   `;
 }
@@ -1117,9 +1104,9 @@ let sentenceGameList = [];
 
 function startSentenceGame(taskId) {
   const task = TASKS.find(t => t.id === taskId);
-  // Task 3 使用健康报告转述口语支架训练器（iframe 嵌入）
-  if (taskId === 3) {
-    showModal(`📝 句式游戏 — Task 3 ${task.name}`, `
+  // Task 5 使用健康报告转述口语支架训练器（iframe 嵌入）
+  if (taskId === 5) {
+    showModal(`📝 句式游戏 — Task 5 ${task.name}`, `
       <div class="iframe-modal-wrap">
         <iframe class="iframe-modal-frame" src="https://liu9098.github.io/health-report-trainer/" allow="microphone; camera; fullscreen" referrerpolicy="no-referrer-when-downgrade"></iframe>
       </div>
@@ -1218,12 +1205,12 @@ function startLottery() {
 // 加载任务对应的线上抽签内容
 function loadLotteryForTask(taskId) {
   const task = TASKS.find(t => t.id === taskId);
-  // Task 3：嵌入独立「角色扮演小组抽签」工作台（体检报告解读分组）
-  if (taskId === 3) {
+  // Task 5：嵌入独立「角色扮演小组抽签」工作台（体检报告解读分组）
+  if (taskId === 5) {
     const taskColor = task ? task.color : '#3182ce';
-    showModal(`🎰 角色扮演小组抽签 — Task 3 体检报告解读`, `
+    showModal(`🎰 角色扮演小组抽签 — Task 5 体检报告解读`, `
       <div style="padding: 4px 0 8px; color: var(--text-secondary); font-size: 13px;">
-        <span class="tag" style="background: ${taskColor}20; color: ${taskColor};">Task 3</span>
+        <span class="tag" style="background: ${taskColor}20; color: ${taskColor};">Task 5</span>
         <span style="margin-left: 8px;">${task ? task.outputType : ''} · 体检报告解读角色扮演分组</span>
       </div>
       <div class="iframe-modal-wrap">
@@ -1405,17 +1392,17 @@ function sendChatMessage() {
 let currentRolePlayTaskId = 1;
 
 function startRolePlay(taskId) {
-  // Task 3：嵌入独立「角色扮演录音大屏工作台」（16:9 大屏、选择小组、demo 模拟模式）
-  if (taskId === 3) {
+  // Task 5：嵌入独立「角色扮演录音大屏工作台」（16:9 大屏、选择小组、demo 模拟模式）
+  if (taskId === 5) {
     const task = TASKS.find(t => t.id === taskId);
     const taskColor = task ? task.color : '#3182ce';
-    showModal(`🎙️ 角色扮演录音 — Task 3 报告转述`, `
+    showModal(`🎙️ 角色扮演录音 — Task 5 报告解读`, `
       <div style="padding: 4px 0 8px; color: var(--text-secondary); font-size: 13px;">
-        <span class="tag" style="background: ${taskColor}20; color: ${taskColor};">Task 3</span>
+        <span class="tag" style="background: ${taskColor}20; color: ${taskColor};">Task 5</span>
         <span style="margin-left: 8px;">${task ? task.outputType : ''} · 体检报告解读角色扮演</span>
       </div>
       <div class="iframe-modal-wrap">
-        <iframe class="iframe-modal-frame" src="task3-recorder/index.html?demo=1&taskId=3" title="角色扮演录音工作台" allow="microphone" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        <iframe class="iframe-modal-frame" src="task3-recorder/index.html?demo=1&taskId=5" title="角色扮演录音工作台" allow="microphone" referrerpolicy="no-referrer-when-downgrade"></iframe>
       </div>
       <div class="modal-footer" style="padding-top: 8px;">
         <button class="btn btn-outline" onclick="closeModal()">关闭</button>
@@ -1543,12 +1530,12 @@ function showQRModal(taskId) {
 function showAIReportModal(taskId) {
   const task = TASKS.find(t => t.id === taskId);
 
-  // Task 3：嵌入独立「角色扮演质检工作台」网页（iframe，保留原页面全部交互）
-  if (taskId === 3) {
+  // Task 5：嵌入独立「角色扮演质检工作台」网页（iframe，保留原页面全部交互）
+  if (taskId === 5) {
     const taskColor = task ? task.color : '#3182ce';
-    showModal(`🎬 角色扮演质检工作台 — Task 3 报告转述`, `
+    showModal(`🎬 角色扮演质检工作台 — Task 5 报告解读`, `
       <div style="padding: 4px 0 12px; color: var(--text-secondary); font-size: 14px;">
-        <span class="tag" style="background: ${taskColor}20; color: ${taskColor};">Task 3</span>
+        <span class="tag" style="background: ${taskColor}20; color: ${taskColor};">Task 5</span>
         <span style="margin-left: 8px;">${task ? task.outputType : ''} · 独立质检工作台（选小组 → 查看报告）</span>
       </div>
       <div class="iframe-modal-wrap">

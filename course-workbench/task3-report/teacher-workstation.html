@@ -1208,6 +1208,31 @@ body {
 
 .report-footer strong { color: var(--ink-muted); font-weight: 600; }
 
+/* ============================================================
+   质检报告字号规范（适配教室投影）
+   原则：标题最大 26–28px，正文中英文 22–24px，
+        状态/元信息小字（high / abnormal / Strong 等）保持原小尺寸
+   ============================================================ */
+/* —— 标题档 26–28px（最大） —— */
+.page--report .section__title        { font-size: 1.5rem; }   /* 27px 段落标题(Performance Highlights 等) */
+
+/* —— 正文档 22–24px —— */
+.page--report .report-topbar__group  { font-size: 1.3rem; }   /* 23px */
+.page--report .report-title__note    { font-size: 1.3rem; }   /* 23px */
+.page--report .dim-card__name        { font-size: 1.3rem; }   /* 23px 维度名(英文) */
+.page--report .dim-card__notes,
+.page--report .dim-card__note        { font-size: 1.3rem; line-height: 1.75; }  /* 23px 维度说明(英文) */
+.page--report .highlight-card__quote { font-size: 1.3rem; line-height: 1.7; }   /* 23px 亮点原句(英文) */
+.page--report .highlight-card__note  { font-size: 1.3rem; line-height: 1.75; }  /* 23px */
+.page--report .optimize-card__quote  { font-size: 1.3rem; line-height: 1.7; }   /* 23px 待优化原句(英文) */
+.page--report .optimize-card__note   { font-size: 1.3rem; }   /* 23px */
+.page--report .recommend-card__text  { font-size: 1.3rem; line-height: 1.7; }   /* 23px 改写前后(英文) */
+
+/* —— 小字保持原尺寸（状态词/元信息：high、abnormal、Strong、eyebrow、页脚等） ——
+   .dim-card__num / .dim-card__label / .report-title__eyebrow /
+   .section__title-sub / .report-topbar__scenario / .recommend-card__label /
+   .highlight-card__label / .report-footer 不放大 */
+
 /* ========================================
    Responsive
    ======================================== */
@@ -1294,6 +1319,13 @@ body {
         <span class="task-nav__en">Follow-up Consultation</span>
       </div>
     </div>
+
+    <button class="btn-back" onclick="returnToMain()" style="margin-bottom: 1.2rem;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      返回主界面
+    </button>
 
     <h1 class="dashboard__title">
       角色扮演<em>质检工作台</em>
@@ -1910,6 +1942,18 @@ function returnToWorkbench() {
   document.getElementById('stageSelect').style.display = 'none';
   document.getElementById('stageReady').style.display = 'flex';
   backToDashboard();
+}
+
+// 返回主界面：关闭质检工作台弹窗，回到课堂互动工具箱
+function returnToMain() {
+  try {
+    if (window.self !== window.top && window.parent && typeof window.parent.closeModal === 'function') {
+      window.parent.closeModal();
+      return;
+    }
+  } catch (e) { /* 跨域等异常忽略 */ }
+  // 独立打开（非 iframe 嵌入）时，直接跳回课程主界面
+  window.location.href = '../index.html';
 }
 
 // ========================================

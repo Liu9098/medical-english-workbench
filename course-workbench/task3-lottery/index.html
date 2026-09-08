@@ -187,6 +187,8 @@
   .report-footer{flex:0 0 auto;display:flex;justify-content:center;gap:1.4vmin;padding:1.2vmin;border-top:1px solid var(--line);background:#f8fbff}
   .report-footer .btn{font-size:2.1vmin;padding:1.3vmin 3vmin;border-radius:.7vmin}
   .report-footer .btn-primary{background:var(--brand);box-shadow:none}
+  .report-footer .btn-home{background:#fff;color:var(--brand);border:1px solid var(--brand);box-shadow:none}
+  .report-footer .btn-home:hover{background:#eef4ff;transform:translateY(-.25vmin)}
 
   @media (max-width:760px){
     .home-head .line1{font-size:6vw}.home-head .line2{font-size:3.6vw}
@@ -236,6 +238,7 @@
         <div class="report-footer">
           <button class="btn btn-primary" onclick="backToDraw()">返回重新抽签</button>
           <button class="btn btn-primary" onclick="goRecorder()">进入角色扮演工作台</button>
+          <button class="btn btn-home" onclick="returnToMain()">返回主界面</button>
         </div>
       </div>
     </div>
@@ -566,6 +569,22 @@ function goRecorder(){
   const url='../task3-recorder/index.html?demo=1&taskId=3&group='+(currentGroup+1);
   if(window.parent!==window){ window.parent.postMessage({type:'openRecorder',group:currentGroup+1,url},'*'); }
   else{ window.open(url,'_blank'); }
+}
+
+// 返回主界面：关闭抽签台弹窗，回到课堂互动工具箱（能立即点其它工具）
+function returnToMain(){
+  // 若当前处于（抽签台内）原生全屏，先退出，避免退回平台后界面锁死
+  try {
+    const exitFs = document.exitFullscreen || document.webkitExitFullscreen;
+    if ((document.fullscreenElement || document.webkitFullscreenElement) && exitFs) exitFs.call(document);
+  } catch (e) {}
+  try {
+    if (window.self !== window.top && window.parent && typeof window.parent.closeModal === 'function') {
+      window.parent.closeModal();
+      return;
+    }
+  } catch (e) { /* 跨域异常忽略 */ }
+  window.location.href = '../index.html';
 }
 
 function resetAll(){

@@ -1035,6 +1035,11 @@ function resetToRecord() {
 
 // 返回主界面：关闭录音工作台弹窗，回到课堂互动工具箱
 function returnToMain() {
+  // 若当前处于（录音工作台内）原生全屏，先退出，避免退回平台后界面锁死
+  try {
+    const exitFs = document.exitFullscreen || document.webkitExitFullscreen;
+    if ((document.fullscreenElement || document.webkitFullscreenElement) && exitFs) exitFs.call(document);
+  } catch (e) {}
   try {
     if (window.self !== window.top && window.parent && typeof window.parent.closeModal === 'function') {
       window.parent.closeModal();

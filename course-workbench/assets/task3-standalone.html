@@ -403,6 +403,11 @@ html, body { background: linear-gradient(180deg, #0a1730 0%, #0d1f3a 100%); colo
     document.getElementById('dash').style.display = 'flex';
   }
   function returnToMain() {
+    // 若当前处于（看板内）原生全屏，先退出，避免退回平台后界面锁死
+    try {
+      const exitFs = document.exitFullscreen || document.webkitExitFullscreen;
+      if ((document.fullscreenElement || document.webkitFullscreenElement) && exitFs) exitFs.call(document);
+    } catch (e) {}
     try {
       if (window.self !== window.top && window.parent && typeof window.parent.closeModal === 'function') {
         window.parent.closeModal();

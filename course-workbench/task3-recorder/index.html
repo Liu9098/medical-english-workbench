@@ -29,22 +29,37 @@ html, body {
   overflow: hidden;
 }
 
-/* ====== 嵌入 iframe 模式：自动切换为百分比布局（解决 iframe 内 vh/vw/vmin 失效黑屏） ====== */
+/* ====== 嵌入 iframe 模式：填满弹窗高度，不再强守 16:9（解决底部被截断/黑块） ====== */
 html.in-iframe,
 html.in-iframe body {
-  overflow: auto;
+  overflow: hidden;
 }
 html.in-iframe #app {
   width: 100%;
-  height: auto;
-  min-height: 56.25vw; /* 9/16 = 0.5625 */
-  aspect-ratio: 16 / 9;
+  height: 100%;
+  min-height: 100%;
+  aspect-ratio: auto;
+  overflow: hidden;
 }
 html.in-iframe .screen {
   position: relative;
-  min-height: 56.25vw;
-  padding: 3%;
+  min-height: 100%;
+  height: 100%;
+  padding: 2.4% 3%;
+  justify-content: space-between;
 }
+html.in-iframe .rec-topbar { top: 2.2vmin; left: 3vmin; font-size: 2.8vmin; }
+html.in-iframe .rec-title { font-size: 5.4vmin; }
+html.in-iframe .rec-theme { font-size: 3.2vmin; }
+html.in-iframe .rec-subtitle { font-size: 1.9vmin; }
+html.in-iframe .rec-stage { gap: 2.2vmin; padding: 1vmin 0; }
+html.in-iframe .role-avatar { width: 17vmin; height: 21vmin; min-width: 92px; min-height: 116px; }
+html.in-iframe .waveform-wrap { height: 22vmin; min-height: 116px; max-width: 46%; }
+html.in-iframe .rec-controls { gap: 1.4vmin; margin-bottom: 0; }
+html.in-iframe .btn-record { padding: 1.7vmin 3.4vmin; font-size: 2.2vmin; min-width: 26vmin; }
+html.in-iframe .btn-group { padding: 1.7vmin 2.8vmin; font-size: 2.2vmin; min-width: 22vmin; }
+html.in-iframe .btn-group svg,
+html.in-iframe .btn-record svg { width: 2.2vmin; height: 2.2vmin; }
 
 /* 全屏模式下为浏览器通知条留出安全距离，避免标题被遮挡 */
 html.fs-safe-top #app { padding-top: 6vmin; }

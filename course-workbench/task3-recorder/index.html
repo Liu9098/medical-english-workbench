@@ -501,6 +501,7 @@ html.fs-safe-top #app { padding-top: 6vmin; }
 .result-footer {
   display: flex;
   justify-content: center;
+  gap: 2vmin;
   padding-top: 1.4vmin;
 }
 
@@ -657,6 +658,7 @@ html.fs-safe-top #app { padding-top: 6vmin; }
       </div>
       <div class="result-footer">
         <button class="btn-return" onclick="resetToRecord()">返回重新录制</button>
+        <button class="btn-return" onclick="returnToMain()">返回主界面</button>
       </div>
     </div>
   </div>
@@ -1029,6 +1031,17 @@ function resetToRecord() {
   btnRecord.innerHTML = '<svg width="2.4vmin" height="2.4vmin" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/></svg>开始录音';
   switchScreen('screenRecording');
   drawStaticWave();
+}
+
+// 返回主界面：关闭录音工作台弹窗，回到课堂互动工具箱
+function returnToMain() {
+  try {
+    if (window.self !== window.top && window.parent && typeof window.parent.closeModal === 'function') {
+      window.parent.closeModal();
+      return;
+    }
+  } catch (e) { /* 跨域异常忽略 */ }
+  window.location.href = '../index.html';
 }
 
 /* ========================================

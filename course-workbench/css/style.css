@@ -1213,51 +1213,87 @@ a.tool-card {
 
 /* ==================== VOCABULARY GAME ==================== */
 .vocab-game-area {
-  background: var(--bg-secondary);
+  background: linear-gradient(160deg, #e0f2fe 0%, #f0f9ff 50%, #e0e7ff 100%);
   border-radius: var(--radius-md);
-  padding: 24px;
+  padding: 22px;
   box-shadow: var(--shadow-sm);
 }
 
+/* 难度选择卡片 */
+.vocab-pick { text-align: center; padding: 8px 4px 20px; }
+.vocab-pick__title { font-size: 18px; font-weight: 700; margin-bottom: 18px; color: var(--text-secondary); }
+.vocab-level-cards { display: flex; gap: 14px; max-width: 580px; margin: 0 auto; flex-wrap: wrap; }
+.vocab-level-card {
+  flex: 1; min-width: 150px;
+  border: 2px solid #e2e8f0; border-radius: 16px;
+  padding: 18px 14px; cursor: pointer; text-align: center;
+  background: rgba(255,255,255,0.82); transition: var(--transition);
+  box-shadow: 0 4px 12px rgba(0,0,0,.05);
+}
+.vocab-level-card:hover { transform: translateY(-4px); border-color: var(--lv); box-shadow: 0 12px 24px rgba(0,0,0,.12); }
+.vocab-level-card__icon { font-size: 34px; margin-bottom: 8px; }
+.vocab-level-card__name { font-weight: 800; font-size: 17px; color: var(--lv); }
+.vocab-level-card__desc { font-size: 13px; color: var(--text-secondary); margin: 4px 0 10px; }
+.vocab-level-card__count { display: inline-block; font-size: 12px; font-weight: 700; color: #fff; background: var(--lv-grad); padding: 3px 12px; border-radius: 99px; }
+
+/* 顶部信息条 + 进度条 */
+.vocab-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.vocab-level-badge { display: inline-flex; align-items: center; gap: 6px; color: #fff; font-weight: 700; font-size: 14px; padding: 6px 14px; border-radius: 99px; box-shadow: 0 4px 12px rgba(0,0,0,.12); }
+.vocab-qcount { font-weight: 700; font-size: 14px; color: var(--text-secondary); }
+.vocab-score-badge { margin-left: auto; background: #fff7ed; color: #ea580c; font-weight: 700; font-size: 14px; padding: 6px 12px; border-radius: 99px; box-shadow: 0 2px 6px rgba(0,0,0,.06); }
+.vocab-progress-track { width: 100%; height: 10px; background: #e2e8f0; border-radius: 99px; overflow: hidden; margin-bottom: 18px; }
+.vocab-progress { height: 100%; width: 0; border-radius: 99px; transition: width .45s ease; }
+
 .vocab-word-card {
-  background: linear-gradient(135deg, #3182ce 0%, #63b3ed 100%);
-  color: var(--text-white);
-  padding: 20px;
+  color: #fff;
+  padding: 22px 20px;
   border-radius: var(--radius-md);
   text-align: center;
   margin-bottom: 16px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.15);
+  position: relative;
 }
-
+.vocab-word-card__icon { font-size: 30px; margin-bottom: 6px; }
 .vocab-word-card .word {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+  text-shadow: 0 1px 2px rgba(0,0,0,.15);
 }
+.vocab-word-card .word.long { font-size: 17px; line-height: 1.5; }
+.vocab-word-card .phonetic { font-size: 14px; opacity: .92; }
 
-.vocab-word-card .phonetic {
-  font-size: 16px;
-  opacity: 0.9;
-}
-
-.vocab-options {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
+.vocab-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .vocab-option {
+  display: flex; align-items: center; gap: 10px;
   padding: 14px;
-  border: 2px solid var(--border-color);
+  border: 2px solid #e2e8f0;
   border-radius: var(--radius-sm);
+  background: #fff;
   cursor: pointer;
   transition: var(--transition);
   font-size: 14px;
-  text-align: center;
+  text-align: left;
+  box-shadow: 0 2px 6px rgba(0,0,0,.04);
 }
-
-.vocab-option:hover { border-color: var(--accent-blue); background: var(--bg-hover); }
+.vocab-option:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.10); border-color: var(--accent-blue); }
+.vocab-opt-letter {
+  flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%;
+  color: #fff; font-weight: 700; font-size: 13px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.vocab-opt-text { flex: 1; }
 .vocab-option.correct { border-color: var(--accent-green); background: #f0fff4; }
 .vocab-option.wrong { border-color: var(--accent-red); background: #fff5f5; }
+
+/* 解析面板 */
+.vocab-explain { margin-top: 16px; padding: 14px 16px; border-radius: var(--radius-sm); animation: vocabPop .3s ease; }
+.vocab-explain__head { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; margin-bottom: 8px; }
+.vocab-explain__body { font-size: 14px; line-height: 1.7; color: #374151; }
+.vocab-explain__label { display: inline-block; background: rgba(0,0,0,.06); border-radius: 6px; padding: 1px 8px; margin-right: 6px; font-weight: 700; }
+.vocab-next-wrap { margin-top: 14px; text-align: center; }
+.vocab-next-btn { font-size: 15px; padding: 12px 26px; }
+@keyframes vocabPop { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
 /* ==================== TASK SELECTOR (工具箱任务选择器) ==================== */
 .task-select-grid {

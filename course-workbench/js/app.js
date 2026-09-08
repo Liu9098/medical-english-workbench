@@ -1036,9 +1036,9 @@ let vocabGameTaskId = 5;
 
 // 词汇闯关三档难度主题（图标 + 配色，用于游戏化界面）
 const VOCAB_LEVELS = {
-  1: { name: '初级', color: '#10b981', grad: 'linear-gradient(135deg,#10b981,#14b8a6)', soft: '#ecfdf5', icon: '🌱', badge: '🩺', desc: '缩写与词义对应' },
-  2: { name: '中级', color: '#3b82f6', grad: 'linear-gradient(135deg,#3b82f6,#6366f1)', soft: '#eff6ff', icon: '⚡', badge: '📋', desc: '语境与搭配判断' },
-  3: { name: '高级', color: '#8b5cf6', grad: 'linear-gradient(135deg,#8b5cf6,#ec4899)', soft: '#f5f3ff', icon: '🔥', badge: '📊', desc: '报告解读表达' }
+  1: { name: '初级', color: '#7c3aed', grad: 'linear-gradient(135deg,#7c3aed,#a78bfa)', soft: '#f3e8ff', icon: '🌱', badge: '🩺', desc: '缩写与词义对应', cardGrad: 'linear-gradient(180deg,#a78bfa 0%,#e9d5ff 100%)' },
+  2: { name: '中级', color: '#2563eb', grad: 'linear-gradient(135deg,#2563eb,#3b82f6)', soft: '#eff6ff', icon: '⚡', badge: '📋', desc: '语境与搭配判断', cardGrad: 'linear-gradient(180deg,#60a5fa 0%,#dbeafe 100%)' },
+  3: { name: '高级', color: '#ea580c', grad: 'linear-gradient(135deg,#ea580c,#f97316)', soft: '#fff7ed', icon: '🔥', badge: '📊', desc: '报告解读表达', cardGrad: 'linear-gradient(180deg,#fb923c 0%,#ffedd5 100%)' }
 };
 
 function startVocabGame(taskId) {
@@ -1060,7 +1060,7 @@ function startVocabGame(taskId) {
         <div class="vocab-level-cards">
           ${[1, 2, 3].map(l => {
             const lv = VOCAB_LEVELS[l];
-            return `<button class="vocab-level-card" style="--lv:${lv.color};--lv-grad:${lv.grad};" onclick="startVocabLevel(${taskId},${l})">
+            return `<button class="vocab-level-card" style="--lv:${lv.color};--lv-grad:${lv.grad};--lv-card:${lv.cardGrad};" onclick="startVocabLevel(${taskId},${l})">
               <div class="vocab-level-card__icon">${lv.icon}</div>
               <div class="vocab-level-card__name">${lv.name}</div>
               <div class="vocab-level-card__desc">${lv.desc}</div>

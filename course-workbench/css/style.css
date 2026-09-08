@@ -1213,7 +1213,7 @@ a.tool-card {
 
 /* ==================== VOCABULARY GAME ==================== */
 .vocab-game-area {
-  background: linear-gradient(160deg, #e0f2fe 0%, #f0f9ff 50%, #e0e7ff 100%);
+  background: linear-gradient(180deg, #172554 0%, #1e3a8a 45%, #4338ca 100%);
   border-radius: var(--radius-md);
   padding: 22px;
   box-shadow: var(--shadow-sm);
@@ -1221,25 +1221,25 @@ a.tool-card {
 
 /* 难度选择卡片 */
 .vocab-pick { text-align: center; padding: 8px 4px 20px; }
-.vocab-pick__title { font-size: 18px; font-weight: 700; margin-bottom: 18px; color: var(--text-secondary); }
+.vocab-pick__title { font-size: 18px; font-weight: 700; margin-bottom: 18px; color: rgba(255,255,255,0.92); }
 .vocab-level-cards { display: flex; gap: 14px; max-width: 580px; margin: 0 auto; flex-wrap: wrap; }
 .vocab-level-card {
   flex: 1; min-width: 150px;
-  border: 2px solid #e2e8f0; border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.25); border-radius: 16px;
   padding: 18px 14px; cursor: pointer; text-align: center;
-  background: rgba(255,255,255,0.82); transition: var(--transition);
-  box-shadow: 0 4px 12px rgba(0,0,0,.05);
+  background: var(--lv-card); transition: var(--transition);
+  box-shadow: 0 8px 24px rgba(0,0,0,.35);
 }
-.vocab-level-card:hover { transform: translateY(-4px); border-color: var(--lv); box-shadow: 0 12px 24px rgba(0,0,0,.12); }
+.vocab-level-card:hover { transform: translateY(-6px); border-color: var(--lv); box-shadow: 0 16px 32px rgba(0,0,0,.45); }
 .vocab-level-card__icon { font-size: 34px; margin-bottom: 8px; }
-.vocab-level-card__name { font-weight: 800; font-size: 17px; color: var(--lv); }
-.vocab-level-card__desc { font-size: 13px; color: var(--text-secondary); margin: 4px 0 10px; }
-.vocab-level-card__count { display: inline-block; font-size: 12px; font-weight: 700; color: #fff; background: var(--lv-grad); padding: 3px 12px; border-radius: 99px; }
+.vocab-level-card__name { font-weight: 800; font-size: 17px; color: #1f2937; }
+.vocab-level-card__desc { font-size: 13px; color: rgba(0,0,0,0.65); margin: 4px 0 10px; }
+.vocab-level-card__count { display: inline-block; font-size: 12px; font-weight: 700; color: #fff; background: var(--lv); padding: 4px 14px; border-radius: 99px; box-shadow: 0 2px 6px rgba(0,0,0,.2); }
 
 /* 顶部信息条 + 进度条 */
 .vocab-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
 .vocab-level-badge { display: inline-flex; align-items: center; gap: 6px; color: #fff; font-weight: 700; font-size: 14px; padding: 6px 14px; border-radius: 99px; box-shadow: 0 4px 12px rgba(0,0,0,.12); }
-.vocab-qcount { font-weight: 700; font-size: 14px; color: var(--text-secondary); }
+.vocab-qcount { font-weight: 700; font-size: 14px; color: rgba(255,255,255,0.85); }
 .vocab-score-badge { margin-left: auto; background: #fff7ed; color: #ea580c; font-weight: 700; font-size: 14px; padding: 6px 12px; border-radius: 99px; box-shadow: 0 2px 6px rgba(0,0,0,.06); }
 .vocab-progress-track { width: 100%; height: 10px; background: #e2e8f0; border-radius: 99px; overflow: hidden; margin-bottom: 18px; }
 .vocab-progress { height: 100%; width: 0; border-radius: 99px; transition: width .45s ease; }

@@ -1971,6 +1971,11 @@ function removeTask3FsListener() {
 }
 
 function closeModal() {
+  // 若仍处于浏览器原生全屏，先退出，避免关闭弹窗后界面锁死（必须按 ESC 才能操作）
+  const exitFs = document.exitFullscreen || document.webkitExitFullscreen;
+  if ((document.fullscreenElement || document.webkitFullscreenElement) && exitFs) {
+    try { exitFs.call(document); } catch (e) {}
+  }
   document.getElementById('modal-overlay').classList.remove('active');
   // 移除放大/全屏弹窗类，避免影响其他弹窗
   document.querySelector('#modal-overlay .modal')?.classList.remove('modal--wide', 'modal--fs', 'modal--recorder');

@@ -1031,22 +1031,93 @@ function setPresetTimer(seconds) {
 let vocabGameIndex = 0;
 let vocabGameScore = 0;
 let vocabGameList = [];
+let vocabGameLevel = 1;
+let vocabGameTaskId = 5;
+
+// 词汇闯关三档难度主题（图标 + 配色，用于游戏化界面）
+const VOCAB_LEVELS = {
+  1: { name: '初级', color: '#10b981', grad: 'linear-gradient(135deg,#10b981,#14b8a6)', soft: '#ecfdf5', icon: '🌱', badge: '🩺', desc: '缩写与词义对应' },
+  2: { name: '中级', color: '#3b82f6', grad: 'linear-gradient(135deg,#3b82f6,#6366f1)', soft: '#eff6ff', icon: '⚡', badge: '📋', desc: '语境与搭配判断' },
+  3: { name: '高级', color: '#8b5cf6', grad: 'linear-gradient(135deg,#8b5cf6,#ec4899)', soft: '#f5f3ff', icon: '🔥', badge: '📊', desc: '报告解读表达' }
+};
 
 function startVocabGame(taskId) {
   const task = TASKS.find(t => t.id === taskId);
-  vocabGameList = VOCAB_BY_TASK[taskId] || VOCAB_QUESTIONS;
+  const baseList = VOCAB_BY_TASK[taskId] || VOCAB_QUESTIONS;
+  // Task 5 体检报告解读：60 题分三档难度（每档 20 题），先选难度再开始
+  if (baseList.length && baseList[0].level) {
+    vocabGameIndex = 0;
+    vocabGameScore = 0;
+    vocabGameLevel = 1;
+    vocabGameTaskId = taskId;
+    showModal(`🔤 词汇闯关 — Task ${taskId} ${task.name}`, `
+      <div style="padding: 4px 0 12px; color: var(--text-secondary); font-size: 14px;">
+        <span class="tag" style="background: ${task.color}20; color: ${task.color};">Task ${taskId}</span>
+        <span style="margin-left: 8px;">${task.outputType} · 高频专业词汇</span>
+      </div>
+      <div class="vocab-pick">
+        <div class="vocab-pick__title">🎮 请选择难度 · 每档 20 题</div>
+        <div class="vocab-level-cards">
+          ${[1, 2, 3].map(l => {
+            const lv = VOCAB_LEVELS[l];
+            return `<button class="vocab-level-card" style="--lv:${lv.color};--lv-grad:${lv.grad};" onclick="startVocabLevel(${taskId},${l})">
+              <div class="vocab-level-card__icon">${lv.icon}</div>
+              <div class="vocab-level-card__name">${lv.name}</div>
+              <div class="vocab-level-card__desc">${lv.desc}</div>
+              <div class="vocab-level-card__count">20 题</div>
+            </button>`;
+          }).join('')}
+        </div>
+      </div>
+    `);
+    return;
+  }
+  vocabGameList = baseList;
   vocabGameIndex = 0;
   vocabGameScore = 0;
+  vocabGameLevel = 1;
+  vocabGameTaskId = taskId;
+  const lvDef = VOCAB_LEVELS[vocabGameLevel];
   showModal(`🔤 词汇闯关 — Task ${taskId} ${task.name}`, `
     <div style="padding: 4px 0 12px; color: var(--text-secondary); font-size: 14px;">
       <span class="tag" style="background: ${task.color}20; color: ${task.color};">Task ${taskId}</span>
       <span style="margin-left: 8px;">${task.outputType} · 高频专业词汇</span>
     </div>
     <div id="vocab-game-area" class="vocab-game-area">
-      <div style="text-align: center; margin-bottom: 16px;">
-        <span class="tag tag-blue">第 <span id="vocab-q-num">1</span>/${vocabGameList.length} 题</span>
-        <span class="tag tag-green" style="margin-left: 8px;">得分: <span id="vocab-score">0</span></span>
+      <div class="vocab-top">
+        <div class="vocab-level-badge" style="background:${lvDef.grad}">${lvDef.badge} ${lvDef.name}</div>
+        <div class="vocab-qcount">第 <span id="vocab-q-num">1</span>/${vocabGameList.length} 题</div>
+        <div class="vocab-score-badge">🏆 <span id="vocab-score">0</span></div>
       </div>
+      <div class="vocab-progress-track"><div class="vocab-progress" id="vocab-progress" style="background:${lvDef.grad}"></div></div>
+      <div id="vocab-content"></div>
+    </div>
+  `);
+  renderVocabQuestion();
+}
+
+// 词汇闯关：按难度开始（Task 5 三档）
+function startVocabLevel(taskId, level) {
+  const task = TASKS.find(t => t.id === taskId);
+  const baseList = VOCAB_BY_TASK[taskId] || VOCAB_QUESTIONS;
+  vocabGameList = baseList.filter(q => q.level === level);
+  vocabGameIndex = 0;
+  vocabGameScore = 0;
+  vocabGameLevel = level;
+  vocabGameTaskId = taskId;
+  const lv = VOCAB_LEVELS[level];
+  showModal(`🔤 词汇闯关 — Task ${taskId} ${task.name} · ${lv.name}`, `
+    <div style="padding: 4px 0 12px; color: var(--text-secondary); font-size: 14px;">
+      <span class="tag" style="background: ${task.color}20; color: ${task.color};">Task ${taskId}</span>
+      <span style="margin-left: 8px;">${task.outputType} · 高频专业词汇 · ${lv.name}</span>
+    </div>
+    <div id="vocab-game-area" class="vocab-game-area">
+      <div class="vocab-top">
+        <div class="vocab-level-badge" style="background:${lv.grad}">${lv.badge} ${lv.name}</div>
+        <div class="vocab-qcount">第 <span id="vocab-q-num">1</span>/${vocabGameList.length} 题</div>
+        <div class="vocab-score-badge">🏆 <span id="vocab-score">0</span></div>
+      </div>
+      <div class="vocab-progress-track"><div class="vocab-progress" id="vocab-progress" style="background:${lv.grad}"></div></div>
       <div id="vocab-content"></div>
     </div>
   `);
@@ -1055,25 +1126,38 @@ function startVocabGame(taskId) {
 
 function renderVocabQuestion() {
   const q = vocabGameList[vocabGameIndex];
+  const lv = VOCAB_LEVELS[vocabGameLevel] || VOCAB_LEVELS[1];
   document.getElementById('vocab-q-num').textContent = vocabGameIndex + 1;
   document.getElementById('vocab-score').textContent = vocabGameScore;
+  const prog = document.getElementById('vocab-progress');
+  if (prog) prog.style.width = ((vocabGameIndex + 1) / vocabGameList.length * 100) + '%';
+  const letters = ['A', 'B', 'C', 'D'];
+  const longCls = q.word.length > 28 ? ' long' : '';
   document.getElementById('vocab-content').innerHTML = `
-    <div class="vocab-word-card">
-      <div class="word">${q.word}</div>
-      <div class="phonetic">${q.phonetic}</div>
+    <div class="vocab-word-card" style="background:${lv.grad};">
+      <div class="vocab-word-card__icon">${lv.badge}</div>
+      <div class="word${longCls}">${q.word}</div>
+      <div class="phonetic">${q.phonetic || '请选择正确选项 · Choose the correct answer'}</div>
     </div>
     <div class="vocab-options">
       ${q.options.map((opt, i) => `
-        <div class="vocab-option" onclick="checkVocabAnswer(${i}, ${q.correct})">${opt}</div>
+        <div class="vocab-option" onclick="checkVocabAnswer(${i}, ${q.correct})">
+          <span class="vocab-opt-letter" style="background:${lv.color};">${letters[i]}</span>
+          <span class="vocab-opt-text">${opt}</span>
+        </div>
       `).join('')}
     </div>
+    <div id="vocab-explain-slot"></div>
   `;
 }
 
 function checkVocabAnswer(selected, correct) {
   const options = document.querySelectorAll('.vocab-option');
   options.forEach(o => o.style.pointerEvents = 'none');
-  if (selected === correct) {
+  const q = vocabGameList[vocabGameIndex];
+  const lv = VOCAB_LEVELS[vocabGameLevel] || VOCAB_LEVELS[1];
+  const isRight = selected === correct;
+  if (isRight) {
     options[selected].classList.add('correct');
     vocabGameScore += 10;
     document.getElementById('vocab-score').textContent = vocabGameScore;
@@ -1081,20 +1165,51 @@ function checkVocabAnswer(selected, correct) {
     options[selected].classList.add('wrong');
     options[correct].classList.add('correct');
   }
-  setTimeout(() => {
-    vocabGameIndex++;
-    if (vocabGameIndex < vocabGameList.length) {
-      renderVocabQuestion();
-    } else {
-      document.getElementById('vocab-content').innerHTML = `
-        <div class="text-center" style="padding: 30px;">
-          <div style="font-size: 48px;">🎉</div>
-          <div style="font-size: 24px; font-weight: 700; margin-top: 12px;">闯关完成！</div>
-          <div style="font-size: 18px; color: var(--accent-green); margin-top: 8px;">最终得分: ${vocabGameScore} / ${vocabGameList.length * 10}</div>
+  const letters = ['A', 'B', 'C', 'D'];
+  let explainHtml = '';
+  if (q.explain) {
+    explainHtml = `
+      <div class="vocab-explain" style="border-left:4px solid ${lv.color};background:${lv.soft};">
+        <div class="vocab-explain__head">
+          <span class="vocab-explain__icon">${isRight ? '✅' : '❌'}</span>
+          <span>${isRight ? '回答正确！' : '正确答案：' + letters[correct]}</span>
         </div>
-      `;
-    }
-  }, 1500);
+        <div class="vocab-explain__body"><span class="vocab-explain__label">📝 解析</span>${q.explain}</div>
+      </div>`;
+  }
+  const isLast = vocabGameIndex + 1 >= vocabGameList.length;
+  const nextBtn = `<div class="vocab-next-wrap"><button class="btn btn-primary vocab-next-btn" onclick="vocabNext()">${isLast ? '查看结果 🎉' : '下一题 →'}</button></div>`;
+  document.getElementById('vocab-explain-slot').innerHTML = explainHtml + nextBtn;
+}
+
+function vocabNext() {
+  vocabGameIndex++;
+  if (vocabGameIndex < vocabGameList.length) {
+    renderVocabQuestion();
+  } else {
+    finishVocabGame();
+  }
+}
+
+function finishVocabGame() {
+  const lv = VOCAB_LEVELS[vocabGameLevel] || VOCAB_LEVELS[1];
+  const total = vocabGameList.length * 10;
+  const rate = total ? Math.round(vocabGameScore / total * 100) : 0;
+  const comment = rate >= 90 ? '太棒了，专业词汇掌握得很扎实！' : rate >= 60 ? '不错，再巩固一下薄弱项就更稳了～' : '加油，多练几遍就熟啦！';
+  const prog = document.getElementById('vocab-progress');
+  if (prog) prog.style.width = '100%';
+  document.getElementById('vocab-content').innerHTML = `
+    <div class="text-center" style="padding: 30px;">
+      <div style="font-size: 56px;">🏆</div>
+      <div style="font-size: 24px; font-weight: 700; margin-top: 12px;">闯关完成！</div>
+      <div style="font-size: 18px; color: ${lv.color}; margin-top: 8px;">本档得分：${vocabGameScore} / ${total}（${rate}%）</div>
+      <div style="font-size: 15px; color: var(--text-secondary); margin-top: 10px;">${comment}</div>
+      <div style="margin-top:18px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="startVocabLevel(${vocabGameTaskId}, ${vocabGameLevel})">再玩一次</button>
+        <button class="btn btn-outline" onclick="startVocabGame(${vocabGameTaskId})">选择难度</button>
+      </div>
+    </div>
+  `;
 }
 
 // ======== 句式游戏（按任务） ========

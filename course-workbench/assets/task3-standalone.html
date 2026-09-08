@@ -15,6 +15,9 @@
   --c-purple:  #9B6DD6;
   --c-teal:    #18B7A8;
   --c-gold:    #F2B705;
+  --c-red:     #e53e3e;
+  --c-indigo:  #5a67d8;
+  --c-cyan:    #0ea5e9;
   --ink:       #1f2430;
   --ink-soft:  #5b6472;
   --ink-faint: #98a0ad;
@@ -43,7 +46,7 @@ html, body {
   padding: 28px; z-index: 10;
 }
 .dialog {
-  width: 100%; max-width: 920px; max-height: 92vh;
+  width: 100%; max-width: 1040px; max-height: 92vh;
   background: var(--card); border-radius: var(--radius);
   box-shadow: var(--shadow); display: flex; flex-direction: column; overflow: hidden;
 }
@@ -91,6 +94,9 @@ html, body {
 .t-purple { --accent: var(--c-purple);--accent-soft: #f1e9fb; }
 .t-teal   { --accent: var(--c-teal);  --accent-soft: #e1f6f3; }
 .t-gold   { --accent: var(--c-gold);  --accent-soft: #fdf3d6; }
+.t-red    { --accent: var(--c-red);   --accent-soft: #ffe5e5; }
+.t-indigo { --accent: var(--c-indigo);--accent-soft: #e8eaff; }
+.t-cyan   { --accent: var(--c-cyan);  --accent-soft: #e0f4ff; }
 
 /* 二、Task3 详情页 */
 .report-wrap { max-width: 1040px; margin: 0 auto; padding: 22px 26px 48px; }
@@ -208,6 +214,38 @@ html, body {
 .modal-mask:fullscreen .modal__body, .modal-mask:-webkit-full-screen .modal__body { max-height: none; padding: 14px 36px 36px; overflow: visible; }
 .modal-mask:fullscreen .eval-card__num, .modal-mask:-webkit-full-screen .eval-card__num { font-size: 34px; }
 .modal-mask:fullscreen .chart-head h4, .modal-mask:-webkit-full-screen .chart-head h4 { font-size: 19px; }
+
+/* ===== 暗色投屏主题（参考质检报告工作台，适配教室大屏） ===== */
+:root {
+  --ink:       #eaf1fb;
+  --ink-soft:  #aebed4;
+  --ink-faint: #8294ac;
+  --line:      rgba(255,255,255,0.12);
+  --bg:        #0a1730;
+  --card:      rgba(13, 28, 52, 0.92);
+  --shadow:    0 12px 34px rgba(0,0,0,0.45);
+  --shadow-sm: 0 4px 14px rgba(0,0,0,0.35);
+}
+html, body { background: linear-gradient(180deg, #0a1730 0%, #0d1f3a 100%); color: var(--ink); }
+.overlay { background: rgba(4, 12, 26, 0.72); }
+.dialog__close { background: rgba(255,255,255,0.08); color: var(--ink-soft); }
+.report-head { background: linear-gradient(135deg, rgba(20,38,68,0.95), rgba(13,28,52,0.95)); border-color: var(--line); }
+.note { background: rgba(20, 34, 58, 0.9); border-color: rgba(255,255,255,0.16); color: var(--ink-soft); }
+.modal { background: rgba(13, 28, 52, 0.96); }
+.modal__head .x { background: rgba(255,255,255,0.08); color: var(--ink-soft); }
+.overall { background: linear-gradient(135deg, rgba(20,38,68,0.9), rgba(13,28,52,0.9)); border-color: rgba(255,255,255,0.16); }
+.overall p { color: var(--ink-soft); }
+.advice { background: rgba(74,144,226,0.12); border-left-color: #4A90E2; color: #cfe0f7; }
+.chart-head .role { background: rgba(255,255,255,0.08); color: var(--ink-soft); }
+.chart-panel { background: rgba(255,255,255,0.04); border-color: var(--line); }
+.eval-card__bar { background: rgba(255,255,255,0.12); }
+.hbar-track { background-color: rgba(255,255,255,0.10); background-image: repeating-linear-gradient(to right, transparent 0, transparent calc(10% - 1px), rgba(255,255,255,0.14) calc(10% - 1px), rgba(255,255,255,0.14) 10%); }
+.kpi-track { background: rgba(255,255,255,0.10); }
+.sum-card.up  { background: rgba(43,98,72,0.28);  border-color: rgba(52,211,153,0.4);  color: #bff0d6; }
+.sum-card.down{ background: rgba(138,82,32,0.28); border-color: rgba(251,146,60,0.4);  color: #f3d3b0; }
+.sum-card.dir { background: rgba(74,144,226,0.18); border-color: rgba(74,144,226,0.4); color: #cfe0f7; }
+.modal-mask:fullscreen, .modal-mask:-webkit-full-screen { background: #0a1730; }
+.modal-mask:fullscreen .modal, .modal-mask:-webkit-full-screen .modal { background: #0d1f3a; }
   </style>
 </head>
 <body>
@@ -291,12 +329,15 @@ html, body {
   <script>
   /* ====================== 预设数据 ====================== */
   const TASKS = [
-    { id: 1, tag: 'Task 1', name: '体检接待',   en: 'Check-in & Reception',  icon: '🏥', cls: 't-blue',   output: '口头产出', ready: false },
-    { id: 2, tag: 'Task 2', name: '信息问询',   en: 'Health Inquiry',        icon: '📋', cls: 't-green',  output: '口头产出', ready: false },
-    { id: 3, tag: 'Task 3', name: '报告转述',   en: 'Report Retelling',      icon: '📄', cls: 't-orange', output: '口头产出', ready: true  },
-    { id: 4, tag: 'Task 4', name: '膳食指导',   en: 'Diet Guidance',         icon: '🥗', cls: 't-purple', output: '口头产出', ready: false },
-    { id: 5, tag: 'Task 5', name: '运动建议',   en: 'Exercise Advice',       icon: '🏃', cls: 't-teal',   output: '口头产出', ready: false },
-    { id: 6, tag: 'Task 6', name: '健康维持',   en: 'Wellness Maintenance',  icon: '💡', cls: 't-gold',   output: '口头产出', ready: false },
+    { id: 1, tag: 'Task 1', name: '客户接待', en: 'Client Reception',          icon: '🏥', cls: 't-blue',   output: '口头产出', ready: false },
+    { id: 2, tag: 'Task 2', name: '检前告知', en: 'Pre-check Instruction',     icon: '📋', cls: 't-red',    output: '口头产出', ready: false },
+    { id: 3, tag: 'Task 3', name: '信息问询', en: 'Health-related Inquiry',    icon: '📄', cls: 't-green',  output: '口头产出', ready: false },
+    { id: 4, tag: 'Task 4', name: '流程引导', en: 'On-site Check Guidance',    icon: '🥗', cls: 't-indigo', output: '口头产出', ready: false },
+    { id: 5, tag: 'Task 5', name: '报告解读', en: 'Report Explanation',        icon: '🏃', cls: 't-orange', output: '口头产出', ready: true  },
+    { id: 6, tag: 'Task 6', name: '目标协商', en: 'Health-goal Negotiation',   icon: '💡', cls: 't-cyan',   output: '口头产出', ready: false },
+    { id: 7, tag: 'Task 7', name: '膳食指导', en: 'Dietary Recommendation',    icon: '🍎', cls: 't-purple', output: '口头产出', ready: false },
+    { id: 8, tag: 'Task 8', name: '运动建议', en: 'Exercise Suggestion',       icon: '🏃', cls: 't-teal',   output: '口头产出', ready: false },
+    { id: 9, tag: 'Task 9', name: '健康随访', en: 'Follow-up Consultation',    icon: '💬', cls: 't-gold',   output: '口头产出', ready: false },
   ];
   const TASK3 = {
     title: 'Task 5 报告解读・角色扮演评价表',
@@ -423,9 +464,9 @@ html, body {
     host.innerHTML = rows + `<div class="hbar-axis">${axis}</div>`;
   }
 
-  /* 图2 雷达图 */
+  /* 图2 雷达图（中英文标签 26px，标签贴近雷达、留足边距防溢出） */
   function buildRadar() {
-    const W = 880, H = 540, cx = 440, cy = 270, R = 168, N = sorted.length;
+    const W = 1320, H = 840, cx = 660, cy = 420, R = 195, OFF = 105, N = sorted.length;
     const pt = (i, r) => {
       const a = -Math.PI / 2 + i * 2 * Math.PI / N;
       return [cx + r * Math.cos(a), cy + r * Math.sin(a), a];
@@ -433,36 +474,50 @@ html, body {
     let gridD = '';
     [0.25, 0.5, 0.75, 1].forEach(lv => {
       const pts = sorted.map((_, i) => pt(i, R * lv).slice(0, 2).join(',')).join(' ');
-      gridD += `<polygon points="${pts}" fill="none" stroke="#e3e8f0" stroke-width="1"/>`;
+      gridD += `<polygon points="${pts}" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>`;
     });
     sorted.forEach((_, i) => {
       const [x, y] = pt(i, R);
-      gridD += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#dfe4ee" stroke-width="1"/>`;
+      gridD += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>`;
     });
     [25, 50, 75, 100].forEach(v => {
       const [x, y] = pt(0, R * v / 100);
-      gridD += `<text x="${x + 6}" y="${y - 4}" font-size="9.5" fill="#aab3c2">${v}</text>`;
+      gridD += `<text x="${x + 8}" y="${y - 6}" font-size="19" fill="#8294ac">${v}</text>`;
     });
     const dataPts = sorted.map((x, i) => ({ p: pt(i, R * x.pct / 100).slice(0, 2), idx: x.idx }));
     const poly = dataPts.map(d => d.p.join(',')).join(' ');
     let dots = '';
     dataPts.forEach(d => {
       const c = COLORS[d.idx] || '#4A7FD6';
-      dots += `<circle cx="${d.p[0]}" cy="${d.p[1]}" r="4" fill="${c}" stroke="#fff" stroke-width="1.5"/>`;
+      dots += `<circle cx="${d.p[0]}" cy="${d.p[1]}" r="5.5" fill="${c}" stroke="#0d1f3a" stroke-width="2"/>`;
     });
-    const area = `<g class="radar-data"><polygon points="${poly}" fill="rgba(74,127,214,0.22)" stroke="#4A7FD6" stroke-width="2.5" stroke-linejoin="round"/>${dots}</g>`;
+    const area = `<g class="radar-data"><polygon points="${poly}" fill="rgba(74,127,214,0.28)" stroke="#4A7FD6" stroke-width="3" stroke-linejoin="round"/>${dots}</g>`;
+    const wrap = (text) => {
+      const words = text.split(' ');
+      const lines = [];
+      let cur = '';
+      words.forEach(w => {
+        if ((cur + ' ' + w).trim().length <= 16) cur = (cur + ' ' + w).trim();
+        else { if (cur) lines.push(cur); cur = w; }
+      });
+      if (cur) lines.push(cur);
+      return lines.length ? lines : [text];
+    };
     const labels = sorted.map((x, i) => {
-      const [lx, ly, a] = pt(i, R + 42);
-      const cos = Math.cos(a), sin = Math.sin(a);
+      const [lx, ly, a] = pt(i, R + OFF);
+      const cos = Math.cos(a);
       let anchor = 'middle';
       if (cos > 0.35) anchor = 'start';
       if (cos < -0.35) anchor = 'end';
-      let dy = -2;
-      if (sin > 0.7) dy = 18; else if (sin < -0.7) dy = -2;
       const c = COLORS[x.idx];
-      return `<text x="${lx}" y="${ly + dy}" text-anchor="${anchor}">
-        <tspan x="${lx}" dy="0" font-size="11.5" font-weight="800" fill="${c}">${x.nameEn}</tspan>
-        <tspan x="${lx}" dy="13" font-size="10" fill="#9aa3b1">${x.nameCn} · ${x.pct}%</tspan></text>`;
+      const eng = wrap(x.nameEn);
+      const lineH = 30;
+      const blockH = (eng.length - 1) * lineH + 26;
+      const y0 = ly - blockH / 2;
+      let tspans = `<tspan x="${lx}" y="${y0}" text-anchor="${anchor}" font-size="26" font-weight="800" fill="${c}">${eng[0]}</tspan>`;
+      for (let k = 1; k < eng.length; k++) tspans += `<tspan x="${lx}" dy="${lineH}" text-anchor="${anchor}" font-size="26" font-weight="800" fill="${c}">${eng[k]}</tspan>`;
+      tspans += `<tspan x="${lx}" dy="${lineH + 4}" text-anchor="${anchor}" font-size="22" fill="#c2cee0">${x.nameCn} · ${x.pct}%</tspan>`;
+      return `<text>${tspans}</text>`;
     }).join('');
     document.getElementById('chartRadar').innerHTML =
       `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="六项指标雷达图">${gridD}${area}${labels}</svg>`;

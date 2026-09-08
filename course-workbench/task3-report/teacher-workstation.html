@@ -119,17 +119,18 @@ body {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  max-width: 640px;
+  max-width: 960px;
   width: 100%;
 }
 
 /* — Task Navigation Bar — */
 .task-nav {
   display: flex;
-  gap: .5rem;
+  gap: .4rem;
   margin-bottom: 2rem;
   flex-wrap: wrap;
   justify-content: center;
+  max-width: 960px;
 }
 
 .task-nav__item {
@@ -146,7 +147,7 @@ body {
   font-weight: 600;
   cursor: default;
   transition: all var(--t-fast);
-  min-width: 90px;
+  min-width: 72px;
 }
 
 .task-nav__item--active {
@@ -1244,38 +1245,53 @@ body {
 
   <div class="dashboard">
 
-    <!-- Task 导航：默认 Task 3 高亮（本次课） -->
+    <!-- Task 导航：默认 Task 5 高亮（本次课） -->
     <div class="task-nav" id="taskNav">
       <div class="task-nav__item" onclick="setActiveTask(1)">
         <span class="task-nav__num">1</span>
-        <span class="task-nav__name">体检接待</span>
-        <span class="task-nav__en">Welcoming Clients</span>
+        <span class="task-nav__name">客户接待</span>
+        <span class="task-nav__en">Client Reception</span>
       </div>
       <div class="task-nav__item" onclick="setActiveTask(2)">
         <span class="task-nav__num">2</span>
-        <span class="task-nav__name">信息登记</span>
-        <span class="task-nav__en">Registration</span>
+        <span class="task-nav__name">检前告知</span>
+        <span class="task-nav__en">Pre-check Instruction</span>
       </div>
-      <div class="task-nav__item task-nav__item--active" onclick="setActiveTask(3)">
+      <div class="task-nav__item" onclick="setActiveTask(3)">
         <span class="task-nav__num">3</span>
-        <span class="task-nav__name">报告转述</span>
-        <span class="task-nav__en">Explaining Reports</span>
-        <span class="task-nav__badge">本次课</span>
+        <span class="task-nav__name">信息问询</span>
+        <span class="task-nav__en">Health-related Inquiry</span>
       </div>
       <div class="task-nav__item" onclick="setActiveTask(4)">
         <span class="task-nav__num">4</span>
-        <span class="task-nav__name">健康建议</span>
-        <span class="task-nav__en">Health Advice</span>
+        <span class="task-nav__name">流程引导</span>
+        <span class="task-nav__en">On-site Check Guidance</span>
       </div>
-      <div class="task-nav__item" onclick="setActiveTask(5)">
+      <div class="task-nav__item task-nav__item--active" onclick="setActiveTask(5)">
         <span class="task-nav__num">5</span>
-        <span class="task-nav__name">复诊预约</span>
-        <span class="task-nav__en">Follow-up</span>
+        <span class="task-nav__name">报告解读</span>
+        <span class="task-nav__en">Report Explanation</span>
+        <span class="task-nav__badge">本次课</span>
       </div>
       <div class="task-nav__item" onclick="setActiveTask(6)">
         <span class="task-nav__num">6</span>
-        <span class="task-nav__name">投诉处理</span>
-        <span class="task-nav__en">Complaint</span>
+        <span class="task-nav__name">目标协商</span>
+        <span class="task-nav__en">Health-goal Negotiation</span>
+      </div>
+      <div class="task-nav__item" onclick="setActiveTask(7)">
+        <span class="task-nav__num">7</span>
+        <span class="task-nav__name">膳食指导</span>
+        <span class="task-nav__en">Dietary Recommendation</span>
+      </div>
+      <div class="task-nav__item" onclick="setActiveTask(8)">
+        <span class="task-nav__num">8</span>
+        <span class="task-nav__name">运动建议</span>
+        <span class="task-nav__en">Exercise Suggestion</span>
+      </div>
+      <div class="task-nav__item" onclick="setActiveTask(9)">
+        <span class="task-nav__num">9</span>
+        <span class="task-nav__name">健康随访</span>
+        <span class="task-nav__en">Follow-up Consultation</span>
       </div>
     </div>
 
@@ -1777,9 +1793,9 @@ const groupReports = {
 const TOTAL_GROUPS = 5;
 let sessionStarted = false;
 let selectedGroup = null;
-let activeTask = 3;
+let activeTask = 5;
 
-// 切换顶部任务卡高亮（默认 Task 3 为本次课）
+// 切换顶部任务卡高亮（默认 Task 5 为本次课）
 function setActiveTask(n) {
   activeTask = n;
   const items = document.querySelectorAll('#taskNav .task-nav__item');
@@ -2068,8 +2084,8 @@ document.addEventListener('keydown', function(e) {
   }
 })();
 
-// 默认停留在首页工作台（Task 3 高亮），由用户点击「选择小组查看报告」进入
-activeTask = 3;
+// 默认停留在首页工作台（Task 5 高亮），由用户点击「选择小组查看报告」进入
+activeTask = 5;
 </script>
 
 </body>

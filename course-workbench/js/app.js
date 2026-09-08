@@ -1483,9 +1483,41 @@ function toggleRecording(btn) {
 }
 
 // ======== 二维码生成 ========
+// Task 5 固定官方二维码（base64 PNG），对应静态链接 https://tranquil-meerkat-9de0a1.netlify.app/
+const TASK5_QR_B64 = "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";
+
 function showQRModal(taskId) {
   const task = TASKS.find(t => t.id === taskId);
   if (!task) return;
+
+  // Task 5：使用固定的官方二维码图片 + 静态链接（不再动态生成）
+  if (taskId === 5) {
+    const url = 'https://tranquil-meerkat-9de0a1.netlify.app/';
+    showModal(`${task.icon} ${task.name} — 任务二维码`, `
+      <div class="qr-display">
+        <div style="display:flex; justify-content:center; margin-bottom:12px;">
+          <img src="data:image/png;base64,${TASK5_QR_B64}" alt="Task 5 固定二维码"
+               style="width:220px; height:220px; border-radius:12px; background:#fff; padding:8px; box-shadow:0 6px 18px rgba(0,0,0,.15);">
+        </div>
+        <div class="qr-label">${task.fullName}</div>
+        <div class="qr-url">${url}</div>
+        <div style="margin-top: 16px;">
+          <button class="btn btn-outline btn-sm" onclick="(navigator.clipboard||{}).writeText('${url}'); showToast('链接已复制')">📋 复制链接</button>
+          <a class="btn btn-primary btn-sm" href="${url}" target="_blank" rel="noopener" style="text-decoration:none;">🔗 打开链接</a>
+        </div>
+        <div style="margin-top: 16px; padding: 12px; background: var(--bg-tertiary); border-radius: var(--radius-sm); font-size: 13px; text-align: left;">
+          <strong>📱 学生扫码后：</strong>
+          <ul style="margin: 6px 0 0 16px; color: var(--text-secondary);">
+            <li>自动加入 ${task.fullName} 任务</li>
+            <li>查看课前/课中/课后任务清单</li>
+            <li>提交作业并获取AI评价</li>
+          </ul>
+        </div>
+      </div>
+    `);
+    return;
+  }
+
   const url = `https://course.example.com/join?task=${taskId}&class=eng-a`;
 
   showModal(`${task.icon} ${task.name} — 任务二维码`, `
